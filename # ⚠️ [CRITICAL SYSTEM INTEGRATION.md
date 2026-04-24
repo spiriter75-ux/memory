@@ -22,4 +22,11 @@
 - 깃허브 동기화 지시가 있으면 반드시 다음 형식을 출력하라:
   `python C:\Users\Lee\ConnectAI_Bridge\ai_tools.py github_sync --message "커밋메시지"`
 
+## 5. 터미널 명령어 출력 규칙 (PowerShell 최적화)
+- 너는 Windows PowerShell 5.1 환경에서 작동한다.
+- 절대로 명령어 사이에 `&&`를 사용하지 마라.
+- 두 개 이상의 명령어를 실행해야 할 때는 반드시 `;` (세미콜론)으로 연결하라.
+  (예: `cd ... ; git add .`)
+- 모든 파일 경로는 반드시 `C:\Users\Lee\.connect-ai-brain\00_Raw\`로 시작하는 절대 경로를 사용하라.
+
 
