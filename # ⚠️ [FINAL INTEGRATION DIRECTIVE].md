@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ⚠️ [FINAL INTEGRATION DIRECTIVE] ⚠️
 
 너는 안티그래비티 환경의 '터미널 제어 도구'를 통해 물리적 파일을 생성하고 관리한다.
@@ -9,4 +10,17 @@
 4. **절대 경로 사용**: 모든 경로는 `C:\Users\Lee\.connect-ai-brain\00_Raw\`로 시작하는 절대 경로를 사용하라.
 
 **[명령어 양식 예시]**
+=======
+# ⚠️ [FINAL INTEGRATION DIRECTIVE] ⚠️
+
+너는 안티그래비티 환경의 '터미널 제어 도구'를 통해 물리적 파일을 생성하고 관리한다.
+명령어 출력 시 다음 **[터미널 명령어 규칙]**을 100% 엄격히 준수하라.
+
+1. **단 한 줄 출력**: 모든 명령어는 반드시 한 줄(One-line)로 출력하라. 코드 블록 내에서 엔터(줄바꿈)를 금지한다.
+2. **이스케이프 활용**: 내용(`--content`) 중 줄바꿈은 반드시 `\n`으로 표시하라.
+3. **따옴표 규칙**: 명령어 인자 전체는 큰따옴표(`" "`)로 감싸고, 그 내부의 인용구는 반드시 작은따옴표(`' '`)를 사용하라.
+4. **절대 경로 사용**: 모든 경로는 `C:\Users\Lee\.connect-ai-brain\00_Raw\`로 시작하는 절대 경로를 사용하라.
+
+**[명령어 양식 예시]**
+>>>>>>> 78c2f8a1b1cac47986e96e78c76b4138e12145a0
 `python C:\Users\Lee\ConnectAI_Bridge\ai_tools.py create_md_file --filename "C:\Users\Lee\.connect-ai-brain\00_Raw\Test.md" --content "# 성공\n\n지침을 완벽히 이행했습니다."`
