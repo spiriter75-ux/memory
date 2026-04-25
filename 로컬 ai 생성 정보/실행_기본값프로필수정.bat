@@ -1,11 +1,7 @@
 @echo off
-chcp 65001 > nul
-echo.
-echo ================================================================
-echo  Connect AI Lab V5 - 기본값 프로필 수정 + GlobalSettings 빌드
-echo ================================================================
-echo.
-cd /d "c:\Users\Lee\.connect-ai-brain\로컬 ai 생성 정보"
+echo [Connect AI] 기본값 프로필 수정 스크립트를 실행합니다...
 python fix_default_profile_v5.py
-echo.
+python replace_profile_settings.py
+python sync_profile_settings.py
+echo [완료] 모든 작업이 끝났습니다. VS Code를 재시작하세요.
 pause
