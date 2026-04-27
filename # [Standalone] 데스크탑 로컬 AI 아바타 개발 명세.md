@@ -8,7 +8,7 @@
 * **CPU:** AMD Ryzen 7 5800H
 * **GPU:** NVIDIA GeForce RTX 3070 (VRAM 8GB)
 * **RAM:** 64GB
-* **백엔드 AI:** Ollama API (localhost:11434, VRAM 점유율을 고려하여 경량 GGUF 모델 통신)
+* **백엔드 AI:** Ollama API (localhost:11434, VRAM 점유율을 고려하여 qwen3.5-9b-Uncensored 등 경량 모델 통신)
 * **프론트엔드 프레임워크:** Python + PyQt5
 
 ## 3. 핵심 UI/UX 요구사항 (동작 시나리오)

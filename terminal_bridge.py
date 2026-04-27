@@ -15,7 +15,7 @@ except ImportError:
 # ============================================================
 # 설정 및 경로 (루트 폴더용)
 # ============================================================
-VISION_MODEL = "llava-phi3"
+VISION_MODEL = "qwen3.5-9b-Uncensored"
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
 
 def create_md_file(filename, content):

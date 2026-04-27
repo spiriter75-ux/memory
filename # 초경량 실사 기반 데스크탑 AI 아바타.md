@@ -6,7 +6,7 @@
 ## 2. 시스템 자원 및 하드웨어 최적화
 * **CPU/RAM:** Ryzen 7 5800H / 64GB RAM (넉넉한 시스템 메모리를 활용해 고화질 애니메이션 상주 가능)
 * **GPU/VRAM:** RTX 3070 8GB (VRAM은 Ollama AI 추론에 우선 할당, 아바타는 경량화된 자원 사용)
-* **AI 백엔드:** Ollama API (localhost:11434 / gemma-2-2b-it-gguf 등)
+* **AI 백엔드:** Ollama API (localhost:11434 / qwen3.5-9b-Uncensored 등)
 
 ## 3. 아바타 애니메이션 제작 전략 (최소화/최적화)
 실사 AVI 영상에서 다음 두 가지 핵심 구간만 추출하여 제작한다.
