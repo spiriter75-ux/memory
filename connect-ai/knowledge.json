@@ -3147,5 +3147,21 @@
     "category": "marketing",
     "source": "me",
     "verified": true
+  },
+  {
+    "id": "n17823774185376671",
+    "text": "# 💻 메모리매쉬 자동 셋업 — AI 에이전트 상태 영구 저장\n\n코다리 AI 에이전트의 두뇌 (memory) 를 파일로 영구 저장 및 복원. 이전 세션의 지식·설정·상태를 유지.\n\n## 자동 생성 파일\n- `~/.memorymesh/memory.json` — JSON 포맷으로 저장 (두뇌 데이터베이스)\n- `~/.memorymesh/config.json` — 에이전트 설정 (autonomy_level, tools 등)\n- `~/.memorymesh/activity.log` — 작업 기록 (감사용)\n\n## 설정 (⚙️ 클릭해서 변경)\n- `MEMORY_DIR`: 저장 위치 (기본 `~/.memorymesh/`)\n- `AUTO_SAVE`: true면 작업마다 자동 저장\n- `MAX_HISTORY`: 저장할 과거 세션 수 (기본 10)\n\n## 사용법\n```bash\n# 1. 첫 실행: 두뇌 다운로드 및 폴더 생성\npython3 memorymesh_setup.py\n\n# 2. 상태 확인\ncat ~/.memorymesh/memory.json\n\n# 3. 백업/복원\ncp ~/.memorymesh/memory.json ~/backup/memory.json\n```\n\n## 좋은 설정 팁\n- `AUTO_SAVE=true`로 두뇌를 자주 저장 (작업 중단 시 지식 손실 방지)\n- `MAX_HISTORY=10`으로 과거 세션 정리 (저장 공간 확보)\n- 정기 백업: `memorymesh_backup.sh` 스크립트 사용\n\n## 다음 단계\n두뇌 셋업 후 코다리가:\n1. `web_init`, `pwa_setup`, `music_studio` 등 도구 호출 시 자동으로 상태 유지\n2. `telegram_bot`과 연동되어 `/status`로 실시간 보고\n3. `git_committer`와 연동되어 코드 변경사항 자동 커밋\n\n## 비용\n완전 무료, 오프라인. API 키 X.",
+    "tags": [
+      "memorymesh",
+      "저장",
+      "memory",
+      "json",
+      "자동",
+      "두뇌"
+    ],
+    "ts": 1782377418537,
+    "category": "coding",
+    "source": "agent",
+    "verified": false
   }
 ]
