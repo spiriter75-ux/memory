@@ -1,0 +1,34 @@
+✅ Z-Image Base Compatibility
+
+These workflows require no update to use it with the Z-Image Base (ZIB) model!
+
+It uses the same Text Encoder and VAE. You simply need to download the new model
+
+BF16 (12GB):
+https://huggingface.co/Comfy-Org/z_image/blob/main/split_files/diffusion_models/z_image_bf16.safetensors
+
+FP8 (6GB):
+https://huggingface.co/drbaph/Z-Image-fp8/blob/main/z-img_fp8-e4m3fn.safetensors
+
+and select it in the model loader.
+
+To see how the Base model performs, just increase the steps in the Sampler to 30-50 and set the CFG to 4-7.
+
+Slightly reduce the size of the positive prompt node. The negative prompt node will then appear behind it, which you can use for the base model.
+
+------------------------------
+
+I have already tested both the BF16 and FP8 versions, and to be honest, I am more than disappointed. Skin details are completely washed out and the rate of mutations (especially regarding hands and feet) is significantly higher compared to Z-Image Turbo.
+
+Furthermore, despite some claims, it is not uncensored. Nipples and genitals remain censored or just look absolutely terrible. Even the Pre-Definer and Detailers fail to fix these glaring issues in most cases.
+
+While we do have the option to use negative prompts here, it doesn't change the poor output quality. And honestly, who wants to wait 3 minutes for a base image that looks like we are back in 2023?
+
+
+In my opinion, Z-Image Turbo is still the absolute way to go!
+
+I strongly advise against switching to the Base model if you care about quality.
+
+It's made as base for finetuning not for high quality photorealistic nsfw pictures.
+
+But feel free to test it yourselves and see the mess!
