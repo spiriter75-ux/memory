@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>덤프트럭 운전자 안전교육 AI 워크벤치 (2026)</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app" class="workbench-container">
+    <!-- Top Global Header -->
+    <header class="top-header">
+      <div class="brand-group">
+        <div class="brand-logo">
+          <span class="logo-icon">🚛</span>
+          <div class="logo-text">
+            <h1>덤프트럭 안전교육 AI 마스터 워크벤치</h1>
+            <span class="version-tag">v2026.2.0 • 16:9 Industrial Suite</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center-info">
+        <div class="badge-tag live-badge" id="serverStatusBadge">
+          <span class="status-dot"></span> ComfyUI 감지 중...
+        </div>
+        <div class="badge-tag mode-badge" id="storageBadge">
+          💾 100% 로컬 디스크 스토리지
+        </div>
+      </div>
+
+      <div class="header-quick-scenes">
+        <span class="quick-label">표준 4대 씬:</span>
+        <button class="quick-scene-btn active" data-id="8" title="교차로 우회전 사각지대">A. 사각지대</button>
+        <button class="quick-scene-btn" data-id="15" title="후진 시 신호수 미배치">B. 후진유도</button>
+        <button class="quick-scene-btn" data-id="13" title="성토지 덤핑 연약지반">C. 덤핑하역</button>
+        <button class="quick-scene-btn" data-id="1" title="출발 전 점검 및 고임목">D. 일일점검</button>
+      </div>
+    </header>
+
+    <!-- Main 16:9 Split Layout -->
+    <main class="main-layout">
+      <!-- Left 65%: Visual Canvas -->
+      <section class="visual-canvas-pane">
+        <!-- Canvas Control Bar -->
+        <div class="canvas-toolbar">
+          <div class="canvas-modes">
+            <button class="mode-tab-btn active" id="tabGrid" onclick="setVisualMode('grid')">
+              <span class="tab-icon">🪟</span> 1차 Krea 4분할 그리드
+            </button>
+            <button class="mode-tab-btn" id="tabSlider" onclick="setVisualMode('slider')">
+              <span class="tab-icon">⚖️</span> 2차 Qwen 50:50 전후비교
+            </button>
+            <button class="mode-tab-btn" id="tabVideo" onclick="setVisualMode('video')">
+              <span class="tab-icon">🎬</span> 3D H3 비디오 플레이어
+            </button>
+          </div>
+
+          <div class="canvas-options">
+            <div class="aspect-toggle">
+              <span class="aspect-label">화면비:</span>
+              <button class="aspect-btn active" id="aspect916" onclick="setAspectRatio('9:16')">9:16 (모바일)</button>
+              <button class="aspect-btn" id="aspect169" onclick="setAspectRatio('16:9')">16:9 (와이드)</button>
+            </div>
+            <button class="icon-tool-btn" id="btnResetView" title="뷰 리셋" onclick="resetCanvasView()">⟲</button>
+          </div>
+        </div>
+
+        <!-- Canvas Viewports -->
+        <div class="viewport-wrapper">
+          <!-- Viewport 1: 4-Split Grid -->
+          <div class="viewport-view active" id="viewGrid">
+            <div class="grid-container aspect-9-16" id="candidateGrid">
+              <!-- 4 Candidates Rendered Here -->
+              <div class="grid-placeholder">
+                <div class="empty-state">
+                  <div class="empty-icon">🎨</div>
+                  <h3>생성된 1차 후보 이미지가 없습니다.</h3>
+                  <p>우측 패널에서 <b>[1차 Krea 4분할 후보 생성]</b> 버튼을 누르면 실시간 렌더링됩니다.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Viewport 2: 50:50 Before/After Slider -->
+          <div class="viewport-view" id="viewSlider">
+            <div class="slider-container aspect-9-16" id="comparisonSlider">
+              <div class="slider-image-before">
+                <img id="imgBefore" src="" alt="Before Krea Candidate">
+                <span class="slider-badge badge-before">Before (1차 Krea 베이스)</span>
+              </div>
+              <div class="slider-image-after" id="sliderAfterWrapper">
+                <img id="imgAfter" src="" alt="After Qwen Refinement">
+                <span class="slider-badge badge-after">After (2차 Qwen 고증 리터칭)</span>
+              </div>
+              <div class="slider-handle" id="sliderHandle">
+                <div class="handle-line"></div>
+                <div class="handle-circle">↔</div>
+                <div class="handle-line"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Viewport 3: 3D Video Player -->
+          <div class="viewport-view" id="viewVideo">
+            <div class="video-container aspect-9-16" id="videoWrapper">
+              <video id="h3VideoPlayer" controls playsinline loop>
+                <source id="videoSource" src="" type="video/mp4">
+                브라우저가 HTML5 비디오를 지원하지 않습니다.
+              </video>
+              <div class="video-overlay-info">
+                <span class="h3-badge">MiniMax H3 Ref2VA • 24fps</span>
+                <span class="h3-timer" id="videoDurationLabel">00:00 / 00:00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Status Footer -->
+        <footer class="canvas-footer">
+          <div class="footer-status-left">
+            <span class="status-indicator-dot success"></span>
+            <span id="canvasSelectionText">선택된 후보: 없음 (후보 이미지를 클릭하여 지정)</span>
+          </div>
+          <div class="footer-status-right">
+            <span class="winner-indicator" id="winnerStatusBadge">🏆 위너 상태: 미확정</span>
+          </div>
+        </footer>
+      </section>
+
+      <!-- Right 35%: Fixed Controller & Inspector -->
+      <aside class="controller-pane">
+        <!-- Section 1: Scenario Selector -->
+        <div class="control-card scenario-card">
+          <div class="card-header">
+            <span class="step-num">01</span>
+            <h2>교육 시나리오 선택</h2>
+          </div>
+          <div class="card-body">
+            <select id="scenarioSelect" class="form-select" onchange="onScenarioChanged()">
+              <option value="">시나리오 로딩 중...</option>
+            </select>
+
+            <div class="scenario-meta-box" id="scenarioMetaBox">
+              <div class="meta-row">
+                <span class="meta-label">법적 근거:</span>
+                <span class="meta-val" id="metaLegalBasis">산업안전보건기준에 관한 규칙 제38조</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">위험 유형:</span>
+                <span class="meta-val badge-risk" id="metaRiskType">사각지대 / 보행자 충돌</span>
+              </div>
+              <div class="meta-desc" id="metaCauseCrisis">
+                우회전 전 사각지대 미확인으로 인한 충돌 위험 상황.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Krea 1st Pass Generator -->
+        <div class="control-card">
+          <div class="card-header">
+            <span class="step-num">02</span>
+            <h2>1차 Krea 2 Turbo 후보 생성</h2>
+          </div>
+          <div class="card-body">
+            <div class="input-grid">
+              <div class="form-group">
+                <label>생성 수량</label>
+                <input type="number" id="kreaCount" class="form-input" value="4" min="1" max="4">
+              </div>
+              <div class="form-group">
+                <label>랜덤 시드</label>
+                <input type="number" id="kreaSeed" class="form-input" value="1000">
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="btnGenerateKrea" onclick="generateKreaCandidates()">
+              <span class="btn-icon">⚡</span> 1차 4분할 후보 생성 (8 Steps)
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 3: Qwen 2nd Pass Compliance & Multi-Angle -->
+        <div class="control-card">
+          <div class="card-header">
+            <span class="step-num">03</span>
+            <h2>2차 Qwen 고증 및 다각도 리터칭</h2>
+          </div>
+          <div class="card-body">
+            <span class="sub-label">원클릭 한국형 고증 지침:</span>
+            <div class="preset-btn-grid">
+              <button class="preset-btn" data-key="plate_and_helmet" onclick="selectQwenPreset('plate_and_helmet')">
+                🏷️ 주황색 번호판+안전모
+              </button>
+              <button class="preset-btn" data-key="wheel_chocks" onclick="selectQwenPreset('wheel_chocks')">
+                🛑 안전 고임목
+              </button>
+              <button class="preset-btn" data-key="hangul_signs" onclick="selectQwenPreset('hangul_signs')">
+                🇰🇷 한글 안전표지
+              </button>
+              <button class="preset-btn" data-key="air_tank_inspection" onclick="selectQwenPreset('air_tank_inspection')">
+                🔍 에어탱크/공기압
+              </button>
+            </div>
+
+            <span class="sub-label">카메라 앵글 전환:</span>
+            <div class="preset-btn-grid">
+              <button class="preset-btn" data-key="angle_front_quarter" onclick="selectQwenPreset('angle_front_quarter')">
+                📐 전측면 3/4각
+              </button>
+              <button class="preset-btn" data-key="angle_side_profile" onclick="selectQwenPreset('angle_side_profile')">
+                📐 4축8륜 측면
+              </button>
+              <button class="preset-btn" data-key="angle_rear_spotter" onclick="selectQwenPreset('angle_rear_spotter')">
+                📐 후방 신호수
+              </button>
+              <button class="preset-btn" data-key="angle_driver_pov" onclick="selectQwenPreset('angle_driver_pov')">
+                📐 운전석 POV
+              </button>
+            </div>
+
+            <div class="form-group mt-2">
+              <label>적용 지침 프롬프트</label>
+              <textarea id="qwenInstructionText" class="form-textarea" rows="2" placeholder="적용할 고증 지침이 자동 입력됩니다."></textarea>
+            </div>
+
+            <button class="btn btn-secondary btn-block" id="btnApplyQwen" onclick="applyQwenRefinement()">
+              <span class="btn-icon">🪄</span> 선택 이미지에 고증 리터칭 적용
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 4: 9-Point QC Checklist & Winner Approval -->
+        <div class="control-card qc-card">
+          <div class="card-header">
+            <span class="step-num">04</span>
+            <h2>9대 QC 검증 및 Winner 승인</h2>
+          </div>
+          <div class="card-body">
+            <div class="qc-checklist" id="qcChecklist">
+              <!-- QC-01 ~ QC-09 Dynamically Injected -->
+            </div>
+
+            <div class="winner-action-box">
+              <button class="btn btn-gold btn-block" id="btnApproveWinner" onclick="approveWinnerCandidate()">
+                <span class="btn-icon">🏆</span> 9대 QC 통과 최종 승인 (Winner)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: 3D Video & Audio Generation -->
+        <div class="control-card">
+          <div class="card-header">
+            <span class="step-num">05</span>
+            <h2>3D 비디오 & 음성 마스터링</h2>
+          </div>
+          <div class="card-body">
+            <div class="input-grid">
+              <div class="form-group">
+                <label>재생 시간</label>
+                <select id="videoDurationSelect" class="form-select">
+                  <option value="3.0">3.0초 (73 프레임)</option>
+                  <option value="6.0" selected>6.0초 (158 프레임)</option>
+                  <option value="10.0">10.0초 (243 프레임)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>성우 모델</label>
+                <select id="ttsVoiceSelect" class="form-select">
+                  <option value="ko-KR-SunHiNeural" selected>선희 (표준 아나운서)</option>
+                  <option value="ko-KR-InJoonNeural">인준 (신뢰 남성)</option>
+                  <option value="ko-KR-BongJinNeural">봉진 (단호 경고)</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="btn btn-purple btn-block" id="btnGenerateVideo" onclick="generateH3Video()">
+              <span class="btn-icon">🎬</span> MiniMax H3 비디오 & TTS 생성
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 6: Official Legal Report Export -->
+        <div class="control-card">
+          <div class="card-header">
+            <span class="step-num">06</span>
+            <h2>공식 안전보건 교육일지(.xlsx) 출력</h2>
+          </div>
+          <div class="card-body">
+            <div class="input-grid">
+              <div class="form-group">
+                <label>수강 기사 성명</label>
+                <input type="text" id="reportDriverName" class="form-input" value="김기사">
+              </div>
+              <div class="form-group">
+                <label>소속 수급사</label>
+                <input type="text" id="reportCompany" class="form-input" value="한라건설">
+              </div>
+            </div>
+            <button class="btn btn-success btn-block" id="btnExportReport" onclick="exportLegalReport()">
+              <span class="btn-icon">📊</span> 법정 안전교육일지(.xlsx) 즉시 출력
+            </button>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Global Progress Modal -->
+    <div id="progressModal" class="modal-overlay hidden">
+      <div class="modal-dialog">
+        <div class="spinner"></div>
+        <h3 id="modalTitle">작업 처리 중...</h3>
+        <p id="modalMessage">파이프라인이 실행 중입니다. 잠시만 기다려주세요.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
