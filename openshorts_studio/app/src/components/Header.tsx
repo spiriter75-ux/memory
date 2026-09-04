@@ -7,9 +7,15 @@ interface HeaderProps {
   project: ProjectMaster;
   onUpdateTitle: (title: string, chapter: string) => void;
   onLoadProject?: (loaded: ProjectMaster) => void;
+  onOpenProjectManager?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ project, onUpdateTitle, onLoadProject }) => {
+export const Header: React.FC<HeaderProps> = ({
+  project,
+  onUpdateTitle,
+  onLoadProject,
+  onOpenProjectManager,
+}) => {
   const [comfyOnline, setComfyOnline] = useState<boolean | null>(null);
   const [saveToast, setSaveToast] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,15 +91,24 @@ export const Header: React.FC<HeaderProps> = ({ project, onUpdateTitle, onLoadPr
           />
         </div>
 
-        {/* 원클릭 백업 저장 & 불러오기 버튼 */}
+        {/* 작업 관리자 & 원클릭 백업 저장 & 불러오기 버튼 */}
         <div className="flex items-center space-x-1.5">
+          <button
+            type="button"
+            onClick={onOpenProjectManager}
+            title="저장된 다른 프로젝트 목록 보기 및 새 창에서 열기"
+            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-xs font-bold transition flex items-center space-x-1 cursor-pointer shadow-sm"
+          >
+            <span>📁 작업 관리</span>
+          </button>
+
           <button
             type="button"
             onClick={handleExport}
             title="현재 프로젝트 전체(대본, 컷, 에셋)를 JSON 파일로 내 PC에 저장"
-            className="px-2.5 py-1.5 bg-indigo-900/50 hover:bg-indigo-700 text-indigo-200 rounded-md border border-indigo-700/60 text-xs font-bold transition flex items-center space-x-1 cursor-pointer"
+            className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-300 rounded-md border border-slate-700 text-xs font-medium transition flex items-center space-x-1 cursor-pointer"
           >
-            <span>💾 프로젝트 저장</span>
+            <span>💾 저장</span>
           </button>
 
           <button

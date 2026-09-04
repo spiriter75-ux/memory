@@ -3,7 +3,7 @@
  * Manages Local State, Project Metadata, and Automatic Cut Segmentation
  */
 
-import { ProjectMaster, StoryboardCut, ReferenceSlots, INSTALLED_UNET_MODELS } from '../types';
+import { ProjectMaster, StoryboardCut, ReferenceSlots, INSTALLED_UNET_MODELS, ProjectSummary } from '../types';
 
 const IDB_NAME = 'OpenShortsProStudioDB';
 const IDB_VERSION = 1;
@@ -63,6 +63,8 @@ export class ProjectService {
       const db = await openProjectDB();
       const tx = db.transaction(IDB_STORE, 'readwrite');
       const store = tx.objectStore(IDB_STORE);
+      // 고유 ID와 레거시 fallback 키 동시 저장
+      store.put(project, project.id);
       store.put(project, 'current_project');
       return new Promise((resolve, reject) => {
         tx.oncomplete = () => resolve();
@@ -93,6 +95,117 @@ export class ProjectService {
       return null;
     }
   }
+
+  async loadProjectById(id: string): Promise<ProjectMaster | null> {
+    try {
+      const db = await openProjectDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const store = tx.objectStore(IDB_STORE);
+        const req = store.get(id);
+        req.onsuccess = () => {
+          if (req.result && req.result.id) {
+            resolve(req.result as ProjectMaster);
+          } else {
+            resolve(null);
+          }
+        };
+        req.onerror = () => resolve(null);
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  async listProjectsSummary(): Promise<ProjectSummary[]> {
+    try {
+      const db = await openProjectDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const store = tx.objectStore(IDB_STORE);
+        const req = store.openCursor();
+        const map = new Map<string, ProjectMaster>();
+
+        req.onsuccess = (e) => {
+          const cursor = (e.target as IDBRequest<IDBCursorWithValue>).result;
+          if (cursor) {
+            const key = String(cursor.key);
+            const val = cursor.value as ProjectMaster;
+            if (val && val.id && key !== 'current_project') {
+              map.set(val.id, val);
+            }
+            cursor.continue();
+          } else {
+            // 저장된 고유 ID 프로젝트가 없고 레거시 current_project만 있는 경우 대비
+            if (map.size === 0) {
+              const fallbackReq = store.get('current_project');
+              fallbackReq.onsuccess = () => {
+                if (fallbackReq.result && fallbackReq.result.id) {
+                  map.set(fallbackReq.result.id, fallbackReq.result);
+                }
+                resolve(this.buildSummariesFromMap(map));
+              };
+              fallbackReq.onerror = () => resolve([]);
+              return;
+            }
+            resolve(this.buildSummariesFromMap(map));
+          }
+        };
+        req.onerror = () => resolve([]);
+      });
+    } catch (err) {
+      console.error('[ProjectService] listProjectsSummary 실패:', err);
+      return [];
+    }
+  }
+
+  private buildSummariesFromMap(map: Map<string, ProjectMaster>): ProjectSummary[] {
+    const list: ProjectSummary[] = [];
+    map.forEach((p) => {
+      const winnerCount = p.cuts ? p.cuts.filter((c) => !!c.winnerImagePath).length : 0;
+      const videoCount = p.cuts ? p.cuts.filter((c) => !!c.upscaledVideoPath || !!c.draftVideoPath).length : 0;
+      const firstWinner = p.cuts ? p.cuts.find((c) => !!c.winnerImagePath)?.winnerImagePath : null;
+      const firstCharThumb = p.characters && p.characters[0]?.refImagePath;
+
+      list.push({
+        id: p.id,
+        title: p.title || '제목 없음',
+        chapter: p.chapter || '제1화',
+        author: p.author || '대표님',
+        createdAt: p.createdAt || new Date().toISOString(),
+        updatedAt: p.updatedAt || new Date().toISOString(),
+        cutCount: p.cuts ? p.cuts.length : 0,
+        winnerCount,
+        videoCount,
+        previewThumbnail: firstWinner || firstCharThumb || null,
+      });
+    });
+
+    return list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    try {
+      const db = await openProjectDB();
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      const store = tx.objectStore(IDB_STORE);
+      store.delete(id);
+      return new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (err) {
+      console.error('[ProjectService] deleteProject 실패:', err);
+    }
+  }
+
+  createNewProject(title: string = '신규 숏츠 프로젝트', chapter: string = '제1화'): ProjectMaster {
+    const newProj = this.createDefaultProject(title);
+    newProj.chapter = chapter;
+    newProj.id = `proj_${Date.now()}`;
+    return newProj;
+  }
+
 
   createDefaultProject(title: string = '신규 숏츠 프로젝트'): ProjectMaster {
     return {

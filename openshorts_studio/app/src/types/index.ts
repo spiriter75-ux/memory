@@ -225,3 +225,18 @@ export interface ProjectMaster {
   defaultVideoDuration: number;
   upscaleTargetMP: number;
 }
+
+// 7. 프로젝트 요약 정보 (작업 선택 및 시작 모달용)
+export interface ProjectSummary {
+  id: string;
+  title: string;
+  chapter: string;
+  author: string;
+  createdAt: string;
+  updatedAt: string;
+  cutCount: number;
+  winnerCount: number;
+  videoCount: number;
+  previewThumbnail?: string | null;
+}
+
