@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+
+# 가상환경
+venv/
+.venv/
+ENV/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+.idea/
+.vscode/
+
+# 대용량 모델 및 미디어 파일 (GitHub 100MB 초과 및 푸시 에러 100% 방지)
+*.safetensors
+*.gguf
+*.ckpt
+*.pt
+*.bin
+*.zip
+*.tar
+*.gz
+*.7z
+*.mp4
+*.avi
+*.mov
+*.webm
+*.wav
+
+# 산출물 폴더 내 대용량 미디어 제외
+outputs/videos/
+outputs/scene_*/
+outputs/post/
+outputs/reports/*.xlsx
+outputs/logs/signatures/
+
+# 레퍼런스 실사 사진 중 대용량 이미지
+assets/refs/*.png
+assets/refs/*.jpg
+assets/refs/*.jpeg
+
+# 필수 소스 및 설정은 강제 추적
+!config/
+!workflows/*.json
+!src/
+!tests/
+!web/
