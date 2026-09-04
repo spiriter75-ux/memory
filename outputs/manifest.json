@@ -1,0 +1,24 @@
+{
+  "version": "2026.2.0",
+  "winners": {
+    "8": {
+      "scene_id": 8,
+      "winner_path": "outputs/winners\\winner_scene_8.png",
+      "source_candidate": "outputs/candidates\\krea_sc8_cand1_888.png",
+      "approved_at": "2026-09-04 21:11:25",
+      "notes": "테스트 승인본",
+      "qc_checks": {
+        "QC-01": true,
+        "QC-02": true,
+        "QC-03": true,
+        "QC-04": true,
+        "QC-05": true,
+        "QC-06": true,
+        "QC-07": true,
+        "QC-08": true,
+        "QC-09": true
+      }
+    }
+  },
+  "videos": {}
+}
