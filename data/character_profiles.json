@@ -1,0 +1,39 @@
+{
+  "vehicle_specs": {
+    "type": "Korean 25-ton Heavy-Duty Cabover Dump Truck",
+    "cabin": "Flat-fronted cabover (no long nose bonnet)",
+    "steering": "Left-Hand Drive (LHD) - steering wheel strictly on the left",
+    "traffic_system": "Right-Hand Traffic (RHT) with yellow double centerlines",
+    "license_plate": "Orange colored construction machinery license plate on front bumper",
+    "axles": "4 axles (8x4 configuration)",
+    "brake_system": "100% Full Air Brake (air pressure 7bar+)"
+  },
+  "characters": {
+    "driver_kim": {
+      "name": "김기사 (Driver Kim)",
+      "role": "초보 덤프트럭 운전자 (청년)",
+      "appearance": "Young Korean male driver in his late 20s, slim build, short black hair",
+      "ppe_rule": "When outside vehicle on site: strictly wears bright yellow safety helmet, hi-vis safety vest, and safety boots. When driving in cabin: wears seatbelt, helmet removed.",
+      "prompt_en": "A young Korean dump truck driver in his late 20s, slim build, short black hair, wearing a khaki work vest over a light blue shirt. When outside vehicle, strictly wearing a yellow safety helmet, hi-vis orange safety vest, and safety boots."
+    },
+    "supervisor_jung": {
+      "name": "정반장 (Supervisor Jung)",
+      "role": "현장 안전 관리소장 / 유도원",
+      "appearance": "Korean construction site supervisor in his 50s, sturdy build, serious expression",
+      "ppe_rule": "Strictly wearing white safety helmet and hi-vis fluorescent orange safety vest with reflective silver stripes, holding red light stick or clipboard.",
+      "prompt_en": "An authoritative Korean construction site supervisor in his 50s, sturdy build, wearing a white safety helmet and a high-visibility fluorescent orange safety vest with silver reflective stripes, holding a red light stick."
+    },
+    "safety_turtle": {
+      "name": "안전 거북이 (Safety Turtle)",
+      "role": "3컷 해결/대안 설명 안전 마스코트",
+      "appearance": "Cute anthropomorphic green turtle walking on two legs, 3-head-high proportion, smart and friendly expression",
+      "ppe_rule": "Strictly wearing a bright yellow safety helmet and bright green safety boots.",
+      "prompt_en": "A cute anthropomorphic green turtle character walking on two legs, wearing a bright yellow safety helmet on its head and bright green safety boots on its feet. 3-head-high proportion, friendly and smart facial expression, pointing at safety guide."
+    }
+  },
+  "korean_environment": {
+    "site_background": "Korean construction site background with gray temporary steel fences (RPP panels), orange safety nets, green safety flags with white cross, modern Korean high-rise apartment complex in distant background.",
+    "road_signage": "Korean road signs with circular red-bordered speed limit signs (10km/h, 20km/h), yellow double centerlines."
+  },
+  "zero_bubble_rule": "STRICT: No text, no letters, no words, no speech bubbles, no typography inside the image. Clean cinematic illustration only."
+}

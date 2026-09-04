@@ -1,0 +1,30 @@
+scenario_id: 8
+title: 현장 사각지대 인식
+category: B. 현장 주행 및 도로 교통 안전
+legal_basis: 도로교통법, 산업안전보건법, 2026 건설기계 안전기준
+site_preset: urban_crossroad
+cargo_state: loaded_soil
+weather_preset: dry_daylight
+role_preset: driver_cabin
+scene_block: 대형 덤프트럭 조수석 방향 아래쪽 좁은 공간으로 근로자가 보행하는 줄 모르고 김기사가 우회전을 시작하려는 순간. 높고 넓은
+  덤프트럭의 우측 사각지대에 가려 근로자를 보지 못해 덤프트럭 우측 측면에 보행자가 부딪치기 직전의 상황.
+solution: 안전관리자가 사이드미러 아래 보조 거울과 사각지대 모니터를 가리키며 "우회전 전에는 반드시 일시 정지하고 우측 사각지대를 거울과
+  카메라로 확실히 확인해야 합니다"라고 안내하는 모습.
+rules:
+- 현장 사각지대 인식 철저 확인
+- 현장 안전수칙 준수
+- 무리한 운행 금지
+motion_prompt: 'For the target video, at 0.00 seconds into the target video, <Picture
+  1> (from [Shot 1]) is fully referenced.
+
+  [Shot 1] On the urban_crossroad terrain, The heavy 25-ton Korean cabover dump truck
+  negotiates the road cautiously at slow speed under 20km/h, yielding safely to pedestrians
+  and scanning blind spots.
+
+  overall_soundscape: heavy diesel engine idle, backup warning chime, construction
+  site ambience.'
+audio:
+  narration: 안전수칙을 철저히 지킵시다! 안전관리자가 사이드미러 아래 보조 거울과 사각지대 모니터를 가리키며 "우회전 전에는 반드시 일시
+    정지하고 우측 사각지대를 거울과 카메라로 확실히 확인해야 합니다"라고 안내하는 모습.
+  voice: ko-KR-SunHiNeural
+  soundscape: heavy diesel truck engine, reverse beeper, construction ambience

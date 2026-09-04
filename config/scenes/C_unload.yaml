@@ -1,0 +1,30 @@
+scenario_id: 13
+title: 하역(덤핑) 작업 시 수평 지반 확보
+category: D. 하역 및 현장 소통 안전
+legal_basis: 도로교통법, 산업안전보건법, 2026 건설기계 안전기준
+site_preset: embankment_dump
+cargo_state: dumping_lift
+weather_preset: dry_daylight
+role_preset: supervisor_inspect
+scene_block: 경사지고 바닥이 다져지지 않은 불안정한 흙길 지반에 트럭을 세운 채 무리하게 적재함을 높이 올리기 시작하는 김기사. 적재함이
+  높이 올라갈수록 무게중심이 위로 쏠리며 트럭이 경사 방향으로 기우뚱하더니 옆으로 완전히 전도되기 직전의 아찔한 순간.
+solution: 안전관리자가 수평계를 들고 평평한 바닥을 가리키며 "덤핑 작업은 반드시 평탄하고 단단하게 다져진 수평 지반에서 수행해야 전도를 예방할
+  수 있습니다"라고 지시하는 모습.
+rules:
+- 하역(덤핑) 작업 시 수평 지반 확보 철저 확인
+- 현장 안전수칙 준수
+- 무리한 운행 금지
+motion_prompt: 'For the target video, at 0.00 seconds into the target video, <Picture
+  1> (from [Shot 1]) is fully referenced.
+
+  [Shot 1] On the embankment_dump terrain, The heavy Korean cabover dump truck remains
+  stationary on flat ground while its hydraulic cylinder smoothly raises the steel
+  dump bed to 45 degrees, safely discharging soil.
+
+  overall_soundscape: heavy diesel engine idle, backup warning chime, construction
+  site ambience.'
+audio:
+  narration: 안전수칙을 철저히 지킵시다! 안전관리자가 수평계를 들고 평평한 바닥을 가리키며 "덤핑 작업은 반드시 평탄하고 단단하게 다져진
+    수평 지반에서 수행해야 전도를 예방할 수 있습니다"라고 지시하는 모습.
+  voice: ko-KR-SunHiNeural
+  soundscape: heavy diesel truck engine, reverse beeper, construction ambience

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sig_1787533676",
+    "created_at": "2026-08-24 10:07:56",
+    "vehicle_number": "경북85바1234",
+    "driver_name": "홍길동",
+    "phone": "010-1234-5678",
+    "edu_name": "2026년 덤프트럭 교통안전 및 작업안전 정기교육",
+    "status": "이수완료",
+    "signature_image_path": "C:\\덤프트럭 운전자교육\\스마트GP 배차시스템\\확약서_TEST999-1.png"
+  },
+  {
+    "id": "sig_1787533676",
+    "created_at": "2026-08-24 10:07:56",
+    "vehicle_number": "경북85바5678",
+    "driver_name": "김철수",
+    "phone": "010-9876-5432",
+    "edu_name": "2026년 덤프트럭 교통안전 및 작업안전 정기교육",
+    "status": "이수완료",
+    "signature_image_path": "C:\\덤프트럭 운전자교육\\스마트GP 배차시스템\\확약서_TEST999-1.png"
+  },
+  {
+    "id": "sig_1787533676",
+    "created_at": "2026-08-24 10:07:56",
+    "vehicle_number": "경북85바9012",
+    "driver_name": "이영희",
+    "phone": "010-1111-2222",
+    "edu_name": "2026년 덤프트럭 교통안전 및 작업안전 정기교육",
+    "status": "이수완료",
+    "signature_image_path": "C:\\덤프트럭 운전자교육\\스마트GP 배차시스템\\확약서_TEST999-1.png"
+  }
+]

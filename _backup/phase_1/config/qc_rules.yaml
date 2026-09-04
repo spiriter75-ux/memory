@@ -1,0 +1,117 @@
+# 덤프트럭 운전자 안전교육 9대 QC 검증 체크리스트 (config/qc_rules.yaml)
+version: "2026.2.0"
+
+qc_rules:
+  - id: "QC-01"
+    name: "한국형 캡오버 25톤 외형"
+    description: "현대 엑시언트 스타일의 평두형(Flat Cabin) 캡오버 덤프트럭 외형 고증 (보닛형 미국식 트럭 엄격 배제)"
+    category: "vehicle_body"
+    required_keywords:
+      - "cab-over"
+      - "flat front cabin"
+      - "Hyundai Xcient"
+    forbidden_keywords:
+      - "conventional bonnet"
+      - "long nose"
+      - "American truck"
+    severity: "CRITICAL"
+
+  - id: "QC-02"
+    name: "주황색/황색 영업용·건설기계 번호판"
+    description: "앞 범퍼 중앙에 주황색(영업용/건설기계) 규격 번호판 장착 (유럽형 청색 띠 또는 흰색 일반 승용 번호판 배제)"
+    category: "compliance"
+    required_keywords:
+      - "orange commercial construction equipment license plate"
+    forbidden_keywords:
+      - "blue European plate"
+      - "white private car plate"
+    severity: "CRITICAL"
+
+  - id: "QC-03"
+    name: "좌측 운전석 (LHD)"
+    description: "대한민국 도로교통법 기준 좌핸들(Left-Hand Drive, 운전석 좌측 배치)"
+    category: "compliance"
+    required_keywords:
+      - "Left-Hand Drive"
+      - "LHD"
+    forbidden_keywords:
+      - "Right-Hand Drive"
+      - "RHD"
+    severity: "CRITICAL"
+
+  - id: "QC-04"
+    name: "4축 8륜 (8x4) 차축 구성"
+    description: "25톤 대형 덤프트럭 필수 4축(앞 2축 조향, 뒤 2축 구동 탠덤 액슬) 8륜 정확성 (차축 누락 및 휠 왜곡 방지)"
+    category: "vehicle_body"
+    required_keywords:
+      - "four axles with 8 wheels"
+      - "8x4 axle configuration"
+    forbidden_keywords:
+      - "extra wheels"
+      - "broken axle"
+      - "3 axles"
+    severity: "HIGH"
+
+  - id: "QC-05"
+    name: "Zero-Bubble 및 무텍스트 준수"
+    description: "만화 말풍선, 대사창, 로고 왜곡, 워터마크가 일체 없는 순수 실사 교육 매뉴얼 사진 톤앤매너"
+    category: "aesthetic"
+    required_keywords:
+      - "photorealistic industrial safety training"
+      - "no speech bubble"
+      - "no text"
+      - "no watermark"
+    forbidden_keywords:
+      - "speech bubble"
+      - "dialog balloon"
+      - "watermark"
+      - "gibberish text"
+    severity: "CRITICAL"
+
+  - id: "QC-06"
+    name: "작업자/기사 보호구(PPE) 완비"
+    description: "운전자 및 현장 인원 전원 흰색 안전모 착용, 형광 주황색/연두색 반사 안전조끼 착용 (미착용 노헬멧 절대 불가)"
+    category: "safety_gear"
+    required_keywords:
+      - "white safety helmet"
+      - "reflective vest"
+    forbidden_keywords:
+      - "bare head"
+      - "without helmet"
+      - "missing safety vest"
+    severity: "CRITICAL"
+
+  - id: "QC-07"
+    name: "신호수/유도원 배치 및 신호봉"
+    description: "후진 및 교차로 선회 시 발광 신호봉을 든 전담 신호수/유도원 배치 고증"
+    category: "safety_action"
+    required_keywords:
+      - "safety spotter"
+      - "signal wand"
+      - "red light baton"
+    forbidden_keywords:
+      - "unguided reversing"
+    severity: "HIGH"
+
+  - id: "QC-08"
+    name: "안전 고임목 및 적재함 안전"
+    description: "정차/주차/점검 시 후륜 황색 쐐기형 고임목 체결, 덤핑 시 연약지반 확인 및 안전거리 확보"
+    category: "safety_action"
+    required_keywords:
+      - "wheel chocks"
+    forbidden_keywords:
+      - "unsecured parking"
+      - "rolling truck"
+    severity: "HIGH"
+
+  - id: "QC-09"
+    name: "현장 지형 및 물리적 현실성"
+    description: "성토지 경사면, 쇄석 골재로, 도심 교차로 등 현실적인 지반 접지력과 물리적 왜곡(공중 부양, 차체 찌그러짐) 배제"
+    category: "environment"
+    required_keywords:
+      - "ground contact"
+    forbidden_keywords:
+      - "floating truck"
+      - "distorted body"
+      - "warped wheels"
+    severity: "MEDIUM"

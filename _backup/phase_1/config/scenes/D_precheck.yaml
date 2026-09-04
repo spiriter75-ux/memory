@@ -1,0 +1,28 @@
+scenario_id: 1
+title: 운행 전 일일 안전점검
+category: A. 출발 전 점검 및 기본 규칙
+legal_basis: 도로교통법, 산업안전보건법, 2026 건설기계 안전기준
+site_preset: urban_crossroad
+cargo_state: cab_inspection
+weather_preset: dry_daylight
+role_preset: driver_precheck
+scene_block: 아침 현장, 김기사가 피곤한 표정으로 덤프트럭 점검을 건너뛰고 운전석에 타는 모습. 현장 주행 중 브레이크 오일 누유로 인해
+  제동이 되지 않아 앞 장애물과 충돌 직전인 상황.
+solution: 안전관리자가 노란 헬멧을 쓰고 나타나 "출발 전 브레이크와 유압 실린더 누유 점검은 필수!"라며 점검표를 보여주는 모습.
+rules:
+- 운행 전 일일 안전점검 철저 확인
+- 현장 안전수칙 준수
+- 무리한 운행 금지
+motion_prompt: 'For the target video, at 0.00 seconds into the target video, <Picture
+  1> (from [Shot 1]) is fully referenced.
+
+  [Shot 1] On the urban_crossroad terrain, The driver conducts a walk-around inspection,
+  verifying yellow wedge wheel chocks firmly placed under the rear tandem tires.
+
+  overall_soundscape: heavy diesel engine idle, backup warning chime, construction
+  site ambience.'
+audio:
+  narration: 안전수칙을 철저히 지킵시다! 안전관리자가 노란 헬멧을 쓰고 나타나 "출발 전 브레이크와 유압 실린더 누유 점검은 필수!"라며
+    점검표를 보여주는 모습.
+  voice: ko-KR-SunHiNeural
+  soundscape: heavy diesel truck engine, reverse beeper, construction ambience

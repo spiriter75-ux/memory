@@ -97,22 +97,29 @@
 
 ---
 
-## 2. 작업 진행 안전장치: 코딩 실수 방지용 단계별 GitHub 체크포인트 및 롤백 체계
+## 2. 작업 진행 안전장치: [절대 헌법] 기존 memory 591개 자산 보호 및 2중 안전 백업 체계
 
-> [!IMPORTANT]
-> **핵심 원칙: "각 단계(Phase) 완료 & 테스트 통과 시마다 즉시 GitHub에 커밋 및 원격 푸시하여 체크포인트 보존"**  
-> 모든 단계는 작업을 마친 후 한꺼번에 백업하는 것이 아니라, **매 단계(Phase 0, B, C, D, E, F, G, H)가 완료되고 단위 테스트를 100% 통과할 때마다 즉시 GitHub 원격(`spiriter75-ux/memory`)에 커밋 및 푸시**합니다.  
-> 이렇게 해야 다음 단계를 코딩하다가 만에 하나 실수나 버그, 충돌이 발생하더라도 **"방금 성공했던 이전 단계의 정상 커밋"으로 1초 만에 100% 안전하게 원상 복구(롤백)**할 수 있습니다.
+> [!CAUTION]
+> **원격 `main` 브랜치 덮어쓰기 절대 금지 (`--force` 영구 봉인)**  
+> `https://github.com/spiriter75-ux/memory`의 `main` 브랜치는 사용자님의 1인 AI 지식 기업 본체(591개 에이전트 기억 및 템플릿)가 보관된 핵심 두뇌입니다.  
+> 따라서 **`main` 브랜치에 대한 강제 푸시(`--force`)는 영구히 절대 금지**하며, 덤프트럭 안전교육 작업물은 **`dumptruck` 전용 브랜치로 철저히 격리**하여 기존 자산을 100% 안전하게 보호합니다.
 
-1. **단계별 필수 실행 사이클 (Phase Completion Cycle)**:
-   - ① 해당 단계 코드 작성 및 설정 완료
-   - ② 단위 테스트(`tests/test_*.py`) 실행 ➔ **100% PASS 확인**
-   - ③ `git add .` 및 Phase 완료 커밋 (`git commit -m "Phase X: [작업명] 완료 및 테스트 통과"`)
-   - ④ **GitHub 원격 저장소로 즉시 푸시 (`git push origin main`)**
-   - ⑤ 사용자에게 "Phase X 완료 및 GitHub 저장 완료" 보고 후 다음 단계 진입 승인 요청
-2. **비상 롤백(복구) 프로토콜**:
-   - 만약 다음 단계 작업 중 예기치 못한 버그나 엉뚱한 수정이 발생하면, 땜방 처리를 하지 않고 **`git reset --hard HEAD` 또는 직전 Phase 커밋으로 즉시 되돌려 완벽한 정상 상태로 복원**.
-3. **대용량 파일 완전 배제**:
+1. **[1중 안전망] 로컬 물리 스냅샷 백업 (`_backup/phase_X/`)**:
+   - 매 Phase가 완료될 때마다, 깃허브뿐만 아니라 로컬 PC 하드디스크 `_backup/phase_0/`, `_backup/phase_1/` ... 폴더에 해당 시점의 소스코드와 설정을 **물리적 파일로 자동 복사하여 2중 세이브 슬롯을 보존**합니다.
+   - 깃허브 네트워크 오류나 실수가 발생하더라도 로컬 백업 폴더에서 1초 만에 즉시 복구할 수 있습니다.
+2. **[2중 안전망] 덤프트럭 전용 브랜치 독립 저장 (`dumptruck` Branch)**:
+   - 모든 단계별 커밋은 `dumptruck` 브랜치에서 안전하게 진행하고 원격으로 푸시합니다 (`git push origin dumptruck`).
+   - 원격 `main` 브랜치의 591개 기존 자산에는 1바이트의 영향도 주지 않으며, 안전하게 분리 보존됩니다.
+3. **단계별 필수 실행 사이클 (Phase Completion Cycle)**:
+   - ① 해당 단계 코드 작성 (파일 1개 원칙)
+   - ② 단위 테스트(`tests/test_*.py`) 실행 ➔ **100% PASS 기계적 확인**
+   - ③ **로컬 스냅샷 복사 (`_backup/phase_X/`)**
+   - ④ `dumptruck` 브랜치 커밋 및 푸시 (`git commit -m "Phase X: ..." ➔ git push origin dumptruck`)
+   - ⑤ **무조건 STOP 후 사용자에게 [결과 1줄 + 실행 로그 3줄 + 백업 완료] 보고 및 승인 대기**
+4. **비상 롤백(복구) 프로토콜**:
+   - 코딩 중 1글자라도 틀어지거나 버그가 나면 땜방 코드를 절대 얹지 않고,
+   - 로컬 `_backup/phase_{X-1}/` 스냅샷 또는 `git reset --hard HEAD`로 **방금 전 성공했던 100% 정상 상태로 1초 만에 즉시 원상 복구**.
+5. **대용량 파일 완전 배제**:
    - zip 파일, mp4 비디오, 대용량 이미지, 모델 가중치는 `.gitignore`로 100% 차단하고, 오직 **순수 소스코드(`src/*.py`), 설정(`config/**/*.yaml`), 웹 UI(`web/*`), 워크플로우 JSON(`workflows/*.json`), 사양서(`*.md`), 테스트 코드(`tests/*.py`)**만 안전하게 추적·보존합니다.
 
 ---
@@ -391,18 +398,19 @@ c:\덤프트럭 운전자교육\
 
 > [!TIP]
 > **모든 단계는 선행 모듈이 완비된 후 다음 모듈로 이어지는 엄격한 의존성 순서(Dependency Chain)를 준수합니다.**  
-> 매 단계는 작업 완료 후 파이썬 인터프리터 실행 검증 ➔ GitHub 원격(`spiriter75-ux/memory`)에 체크포인트 커밋 & 푸시가 완료되어야 해당 단계가 종결됩니다.
+> 매 단계는 작업 완료 후 파이썬 인터프리터 실행 검증 ➔ **로컬 물리 스냅샷(`_backup/phase_X/`) 복사 ➔ `dumptruck` 전용 브랜치 커밋 & 푸시**가 완료되어야 해당 단계가 종결됩니다. (원격 `main` 591개 자산 절대 불침범)
 
-| 단계 | 작업 내용 및 대상 파일 (단일 파일 원칙) | 웹 작업대 연동 상태 | 완료 판정 기준 (Verification & Git Checkpoint) |
+| 단계 | 작업 내용 및 대상 파일 (단일 파일 원칙) | 웹 작업대 연동 상태 | 완료 판정 기준 (Verification & 2중 안전 백업) |
 |:---:|---|---|---|
-| **Phase 0** | **GitHub 안전망 가동 및 클린 베이스라인 저장**<br>• `.gitignore` 생성 (대용량 제외)<br>• 6대 자산 및 클린 상태 베이스라인 커밋 | - | `git status` 클린 확인 ➔ **첫 베이스라인 GitHub 푸시 완료** |
-| **Phase 1** | **설정 및 시나리오 관리 엔진 구축**<br>• `config/settings.yaml`, `config/qc_rules.yaml`<br>• `src/scenario_manager.py` & 기본 YAML 4종 | - | 69개 DB 목록 조회 및 YAML 자동 추출/검증 테스트 통과 ➔ **GitHub 커밋 & 푸시 완료** |
-| **Phase 2** | **ComfyUI 워크플로우 로더 엔진 구축**<br>• `src/workflow_loader.py` | - | API JSON 딥카피 로드 및 노드 title/ID 안전 치환 테스트 통과 ➔ **GitHub 커밋 & 푸시 완료** |
-| **Phase 3** | **ComfyUI 2D 통신 & 배치 생성 엔진 구축**<br>• `src/comfy_client.py`<br>• `src/batch_runner.py` & `src/manifest.py` | - | ComfyUI WebSocket 연동, 시드 고정 2D 생성 및 manifest 기록 검증 ➔ **GitHub 커밋 & 푸시 완료** |
-| **Phase 4** | **웹 브라우저 작업대 서버 & UI 1차 활성화**<br>• `src/server.py` (경량 REST API 8900 포트)<br>• `web/index.html`, `style.css`, `app.js` | **[패널 1, 2 활성화]**<br>• 시나리오 기획/편집<br>• 2D 생성 & 9대 QC 판독<br>• Winner 승인 확정 | `http://localhost:8900` 브라우저 접속, 시나리오 수정 저장 및 2D 컷 QC 승인(`winner.png` 저장) 브라우저 동작 검증 ➔ **GitHub 커밋 & 푸시 완료** |
-| **Phase 5** | **MiniMax H3 가변 모션 & 릴레이 엔진 구축**<br>• `src/video_engine.py` (Ref2VA 노드 13/14/15 주입)<br>• `src/relay_engine.py` (3초~100초+ FFmpeg xfade) | **[패널 3 활성화]**<br>• Winner 기반 H3 렌더링<br>• 릴레이 타임라인 합성<br>• 웹 비디오 플레이어 재생 | 단일 컷(3~15초) 및 N컷 릴레이(30~100초+) 비디오 생성 후 웹 플레이어 정상 재생 검증 ➔ **GitHub 커밋 & 푸시 완료** |
-| **Phase 6** | **음성/자막 마스터링 & 모바일 서명 & 엑셀 일지 구축**<br>• `src/audio_master.py` (Edge-TTS + 자막/배지)<br>• `src/server.py` (`/sign` 모바일 서명 패드 서빙)<br>• `src/excel_reporter.py` (서명 삽입 교육일지) | **[패널 4, 5 활성화]**<br>• TTS 미리듣기 및 믹싱<br>• QR 모바일 서명 실시간 수신<br>• 엑셀 일지 원클릭 다운로드 | 모바일 서명 실시간 수집 및 공식 법정 교육일지(.xlsx) 브라우저 다운로드 검증 ➔ **GitHub 커밋 & 푸시 완료** |
-| **Phase 7** | **원클릭 통합 런처 및 최종 통합 릴리스**<br>• `실행.bat` (서버 8900 기동 + 브라우저 자동 오픈)<br>• `README.md` 최종 사용자 매뉴얼 | **[전체 5대 패널 완비]**<br>원클릭 완전 자동화 | `실행.bat` 더블클릭 시 브라우저 자동 오픈 및 전체 5단계 워크플로우 엔드투엔드 최종 점검 ➔ **최종 릴리스 태그 & GitHub 푸시 완료** |
+| **Phase 0** | **GitHub 안전망 가동 및 클린 베이스라인 저장**<br>• `.gitignore` 생성 (대용량 제외)<br>• 6대 자산 및 클린 상태 베이스라인 커밋 | - | `git status` 클린 확인 ➔ **로컬 `_backup/phase_0/` 저장 & `dumptruck` 브랜치 푸시** |
+| **Phase 1** | **설정 및 시나리오 관리 엔진 구축**<br>• `config/settings.yaml`, `config/qc_rules.yaml`<br>• `src/scenario_manager.py` & 기본 YAML 4종 | - | 69개 DB 목록 조회 및 YAML 자동 추출/검증 통과 ➔ **로컬 `_backup/phase_1/` 저장 & `dumptruck` 푸시** |
+| **Phase 2** | **ComfyUI 워크플로우 로더 엔진 구축**<br>• `src/workflow_loader.py` | - | API JSON 딥카피 로드 및 노드 title/ID 안전 치환 통과 ➔ **로컬 `_backup/phase_2/` 저장 & `dumptruck` 푸시** |
+| **Phase 3** | **ComfyUI 2D 통신 & 배치 생성 엔진 구축**<br>• `src/comfy_client.py`<br>• `src/batch_runner.py` & `src/manifest.py` | - | ComfyUI WebSocket 연동, 시드 고정 2D 생성 검증 ➔ **로컬 `_backup/phase_3/` 저장 & `dumptruck` 푸시** |
+| **Phase 4** | **웹 브라우저 작업대 서버 & UI 1차 활성화**<br>• `src/server.py` (경량 REST API 8900 포트)<br>• `web/index.html`, `style.css`, `app.js` | **[패널 1, 2 활성화]**<br>• 시나리오 기획/편집<br>• 2D 생성 & 9대 QC 판독<br>• Winner 승인 확정 | `http://localhost:8900` 브라우저 접속, 시나리오 수정 저장 및 2D 컷 QC 승인(`winner.png` 저장) 브라우저 동작 검증 ➔ **로컬 `_backup/phase_4/` 저장 & `dumptruck` 푸시** |
+| **Phase 5** | **MiniMax H3 가변 모션 & 릴레이 엔진 구축**<br>• `src/video_engine.py` (Ref2VA 노드 13/14/15 주입)<br>• `src/relay_engine.py` (3초~100초+ FFmpeg xfade) | **[패널 3 활성화]**<br>• Winner 기반 H3 렌더링<br>• 릴레이 타임라인 합성<br>• 웹 비디오 플레이어 재생 | 단일 컷(3~15초) 및 N컷 릴레이(30~100초+) 비디오 생성 후 웹 플레이어 정상 재생 검증 ➔ **로컬 `_backup/phase_5/` 저장 & `dumptruck` 푸시** |
+| **Phase 6** | **음성/자막 마스터링 & 모바일 서명 & 엑셀 일지 구축**<br>• `src/audio_master.py` (Edge-TTS + 자막/배지)<br>• `src/server.py` (`/sign` 모바일 서명 패드 서빙)<br>• `src/excel_reporter.py` (서명 삽입 교육일지) | **[패널 4, 5 활성화]**<br>• TTS 미리듣기 및 믹싱<br>• QR 모바일 서명 실시간 수신<br>• 엑셀 일지 원클릭 다운로드 | 모바일 서명 실시간 수집 및 공식 법정 교육일지(.xlsx) 브라우저 다운로드 검증 ➔ **로컬 `_backup/phase_6/` 저장 & `dumptruck` 푸시** |
+| **Phase 7** | **원클릭 통합 런처 및 최종 통합 릴리스**<br>• `실행.bat` (서버 8900 기동 + 브라우저 자동 오픈)<br>• `README.md` 최종 사용자 매뉴얼 | **[전체 5대 패널 완비]**<br>원클릭 완전 자동화 | `실행.bat` 더블클릭 시 브라우저 자동 오픈 및 전체 5단계 워크플로우 엔드투엔드 최종 점검 ➔ **로컬 `_backup/phase_final/` 저장 & 최종 태그 푸시** |
+
 
 
 ---

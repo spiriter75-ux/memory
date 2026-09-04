@@ -1,0 +1,128 @@
+{
+  "3": {
+    "inputs": {
+      "seed": 42,
+      "steps": 4,
+      "cfg": 1.0,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1.0,
+      "model": [
+        "4",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler (FLUX Schnell)"
+    }
+  },
+  "4": {
+    "inputs": {
+      "unet_name": "flux1-schnell-fp8.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "FLUX UNET 로드"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": 576,
+      "height": 1024,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "빈 Latent (576x1024 9:16)"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "Photorealistic Korean 25-ton heavy-duty cabover dump truck on construction site, left-hand drive, bright daylight, cinematic lighting, 8k, detailed, no text, no letters, no watermark",
+      "clip": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "긍정 프롬프트 (Positive)"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "ugly, blurry, deformed, long nose conventional truck, right-hand drive, text, letters, watermark, speech bubbles",
+      "clip": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "부정 프롬프트 (Negative)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "3",
+        0
+      ],
+      "vae": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE 디코드"
+    }
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": "FLUX_DumpTruck",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "이미지 저장"
+    }
+  },
+  "10": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "FLUX VAE 로드 (ae.safetensors)"
+    }
+  },
+  "11": {
+    "inputs": {
+      "clip_name1": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "clip_name2": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "flux"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "듀얼 CLIP 로드"
+    }
+  }
+}

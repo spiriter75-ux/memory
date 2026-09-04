@@ -1,0 +1,59 @@
+# 덤프트럭 운전자 안전교육 시스템 글로벌 설정 (config/settings.yaml)
+version: "2026.2.0"
+
+comfyui:
+  host: "127.0.0.1"
+  port: 8188
+  timeout_seconds: 600
+  poll_interval: 1.0
+
+workflows:
+  t2i_krea:
+    path: "workflows/2d_t2i_krea.json"
+    engine: "Krea 2 Turbo"
+    steps: 8
+    cfg: 1.0
+    sampler: "euler"
+    scheduler: "normal"
+  i2i_qwen:
+    path: "workflows/2d_i2i_qwen.json"
+    engine: "Qwen-Rapid-AIO + Lightning 8-step LoRA"
+    steps: 8
+    cfg: 1.0
+    denoise: 0.65
+  h3_video:
+    path: "workflows/Minimax H3 Ref2VA + Easy Cache _ Spectrum + Sage.json"
+    engine: "MiniMax H3 Ref2VA Curve Q5_1 + Turbo v4 LoRA"
+    fps: 24
+    default_duration_sec: 6.0
+    default_frames: 144
+
+resolutions:
+  default_aspect: "9:16"
+  vertical_9_16:
+    width: 576
+    height: 1024
+  horizontal_16_9:
+    width: 1024
+    height: 576
+
+audio:
+  default_voice: "ko-KR-SunHiNeural"
+  backup_voice: "ko-KR-InJoonNeural"
+  rate: "+0%"
+  volume: "+0%"
+  default_soundscape: "heavy diesel truck engine idle sound, reverse beeper, construction site wind"
+
+storage:
+  db_path: "data/dump_safety_db.json"
+  scenes_dir: "config/scenes"
+  winners_dir: "outputs/winners"
+  videos_dir: "outputs/videos"
+  reports_dir: "outputs/reports"
+  logs_dir: "outputs/logs"
+  manifest_path: "outputs/manifest.json"
+
+prompts:
+  invariant_core: "Korean cab-over heavy-duty 25-ton dump truck, Hyundai Xcient-style, flat front cabin, Left-Hand Drive (LHD), orange commercial construction equipment license plate on front bumper, four axles with 8 wheels (8x4 axle configuration)"
+  zero_bubble_style: "photorealistic industrial safety training manual photography, 4K, bright daylight, no speech bubble, no text, no watermark"
+  default_negative: "conventional-nose American truck, long bonnet, right-hand drive, blue European license plate, English road signs, foreign signage, left-hand traffic, speech bubble, cartoon dialog, worker without safety helmet, bare head without PPE, missing reflective vest, deformed dump body, extra wheels, broken axle, distorted fingers, blurry text"

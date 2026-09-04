@@ -1,0 +1,30 @@
+scenario_id: 15
+title: 후진 시 전담 유도자 배치 및 신호 준수
+category: D. 하역 및 현장 소통 안전
+legal_basis: 도로교통법, 산업안전보건법, 2026 건설기계 안전기준
+site_preset: aggregate_quarry
+cargo_state: loaded_soil
+weather_preset: dry_daylight
+role_preset: spotter_guide
+scene_block: 후방 시야가 크게 가로막힌 하역장에서 유도자 없이 김기사가 백미러에만 의존해 무작정 후진을 시도하는 상황. 트럭 바로 뒤 사각지대에
+  있는 다른 작업 장비나 장애물을 보지 못하고 그대로 충돌하기 직전의 위기 상황.
+solution: 안전관리자가 안전조끼를 입고 경광봉을 흔들며 신호하는 전문 유도자의 모습을 가리키며 "후진할 때는 무조건 전문 유도원의 수신호와
+  눈맞춤(Eye contact)을 유지하며 서행해야 합니다"라고 알려주는 모습.
+rules:
+- 후진 시 전담 유도자 배치 및 신호 준수 철저 확인
+- 현장 안전수칙 준수
+- 무리한 운행 금지
+motion_prompt: 'For the target video, at 0.00 seconds into the target video, <Picture
+  1> (from [Shot 1]) is fully referenced.
+
+  [Shot 1] On the aggregate_quarry terrain, A dedicated safety spotter in hi-vis orange
+  vest and white helmet waves a glowing red light baton, guiding the 25-ton Korean
+  cabover dump truck as it reverses slowly with audible caution.
+
+  overall_soundscape: heavy diesel engine idle, backup warning chime, construction
+  site ambience.'
+audio:
+  narration: 안전수칙을 철저히 지킵시다! 안전관리자가 안전조끼를 입고 경광봉을 흔들며 신호하는 전문 유도자의 모습을 가리키며 "후진할 때는
+    무조건 전문 유도원의 수신호와 눈맞춤(Eye contact)을 유지하며 서행해야 합니다"라고 알려주는 모습.
+  voice: ko-KR-SunHiNeural
+  soundscape: heavy diesel truck engine, reverse beeper, construction ambience

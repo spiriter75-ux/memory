@@ -1,0 +1,332 @@
+{
+  "2": {
+    "inputs": {
+      "shift": 3.5,
+      "model": [
+        "140",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "⚙️ Model Sampling"
+    }
+  },
+  "6": {
+    "inputs": {
+      "width": 768,
+      "height": 1344,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "📐 Image Size"
+    }
+  },
+  "11": {
+    "inputs": {
+      "samples": [
+        "17",
+        0
+      ],
+      "vae": [
+        "98",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "🎨 VAE Decode"
+    }
+  },
+  "12": {
+    "inputs": {
+      "samples": [
+        "14",
+        0
+      ],
+      "vae": [
+        "98",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "🎨 VAE Decode"
+    }
+  },
+  "13": {
+    "inputs": {
+      "rgthree_comparer": {
+        "images": [
+          {
+            "name": "A",
+            "selected": true,
+            "url": "/api/view?filename=rgthree.compare._temp_efnpc_00005_.png&type=temp&subfolder=&rand=0.7773071788724863"
+          },
+          {
+            "name": "B",
+            "selected": true,
+            "url": "/api/view?filename=rgthree.compare._temp_efnpc_00006_.png&type=temp&subfolder=&rand=0.745723168430592"
+          }
+        ]
+      },
+      "image_a": [
+        "11",
+        0
+      ],
+      "image_b": [
+        "12",
+        0
+      ]
+    },
+    "class_type": "Image Comparer (rgthree)",
+    "_meta": {
+      "title": "🔍 Compare Images"
+    }
+  },
+  "14": {
+    "inputs": {
+      "seed": [
+        "54",
+        0
+      ],
+      "steps": 10,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "beta",
+      "denoise": 0.4,
+      "model": [
+        "2",
+        0
+      ],
+      "positive": [
+        "20",
+        0
+      ],
+      "negative": [
+        "100",
+        0
+      ],
+      "latent_image": [
+        "45",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "🔄 Upscale Sampler"
+    }
+  },
+  "17": {
+    "inputs": {
+      "seed": [
+        "54",
+        0
+      ],
+      "steps": 10,
+      "cfg": 1.1,
+      "sampler_name": "euler",
+      "scheduler": "beta",
+      "denoise": 1,
+      "model": [
+        "2",
+        0
+      ],
+      "positive": [
+        "20",
+        0
+      ],
+      "negative": [
+        "100",
+        0
+      ],
+      "latent_image": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "🎨 Generate Image"
+    }
+  },
+  "20": {
+    "inputs": {
+      "text": "masterpiece, best quality, interior of the 'Ahn Changho-ham' submarine's command center (발령소), illuminated by flickering red emergency lights casting deep, eerie shadows on the tense faces of the crew members, cramped and heavy atmosphere, showing various crew members monitoring screens and operating equipment, close-up on a few focused faces, realistic details, modern webtoon style, clean lines, rich colors, 9:16 aspect ratio.",
+      "clip": [
+        "140",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "✨ Positive Prompt"
+    }
+  },
+  "44": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "scale_by": 1.5,
+      "image": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "ImageScaleBy",
+    "_meta": {
+      "title": "📏 Scale Image"
+    }
+  },
+  "45": {
+    "inputs": {
+      "pixels": [
+        "44",
+        0
+      ],
+      "vae": [
+        "98",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "📥 VAE Encode"
+    }
+  },
+  "54": {
+    "inputs": {
+      "seed": -1
+    },
+    "class_type": "Seed (rgthree)",
+    "_meta": {
+      "title": "🎲 Seed Control"
+    }
+  },
+  "89": {
+    "inputs": {
+      "clip_name": "qwen3_4b_fp8_scaled.safetensors",
+      "type": "qwen_image",
+      "device": "cpu"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "CLIP 로드"
+    }
+  },
+  "90": {
+    "inputs": {
+      "unet_name": "z-anime-distill-8step-fp8.safetensors",
+      "weight_dtype": "fp8_e4m3fn"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "확산 모델 로드"
+    }
+  },
+  "91": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "VAE 로드"
+    }
+  },
+  "93": {
+    "inputs": {
+      "filename_prefix": "Z-Anime",
+      "images": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "💾 Save Z-Anime"
+    }
+  },
+  "95": {
+    "inputs": {
+      "filename_prefix": "Z-Anime-Upscale",
+      "images": [
+        "12",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "💾 Save Z-Anime Upscaled"
+    }
+  },
+  "98": {
+    "inputs": {
+      "any_01": [
+        "91",
+        0
+      ]
+    },
+    "class_type": "Any Switch (rgthree)",
+    "_meta": {
+      "title": "VAE Switch"
+    }
+  },
+  "100": {
+    "inputs": {
+      "text": "Avoid blurry, low-quality, noisy, oversmoothed, distorted or messy results. Avoid bad anatomy, deformed hands, extra fingers, fused fingers, missing fingers, broken limbs, duplicate body parts, asymmetrical eyes, distorted face, warped features, wrong proportions, cropped head, cut-off body, bad framing, unreadable text, watermark, logo, signature, background clutter, compression artifacts, muddy colors, and inconsistent details. Keep the image clean, sharp, coherent, expressive, and anatomically believable without removing anime styling.",
+      "clip": [
+        "140",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "➖ Negative Prompt"
+    }
+  },
+  "140": {
+    "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+        "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+        "on": true,
+        "lora": "로라\\hee2_lora_v1.safetensors",
+        "strength": 1
+      },
+      "lora_2": {
+        "on": true,
+        "lora": "로라\\leehs_first_lora_v1.safetensors",
+        "strength": 1
+      },
+      "lora_3": {
+        "on": true,
+        "lora": "로라\\bak_lora_v1.safetensors",
+        "strength": 1
+      },
+      "lora_4": {
+        "on": true,
+        "lora": "로라\\yu_lora_v1.safetensors",
+        "strength": 1
+      },
+      "lora_5": {
+        "on": true,
+        "lora": "밀리터리\\Special_forces_uniform.safetensors",
+        "strength": 1
+      },
+      "➕ Add Lora": "",
+      "model": [
+        "90",
+        0
+      ],
+      "clip": [
+        "89",
+        0
+      ]
+    },
+    "class_type": "Power Lora Loader (rgthree)",
+    "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+    }
+  }
+}
