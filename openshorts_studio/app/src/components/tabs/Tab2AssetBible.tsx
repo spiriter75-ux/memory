@@ -93,6 +93,7 @@ export const Tab2AssetBible: React.FC<Tab2Props> = ({
   const [h3IsCropped, setH3IsCropped] = useState<boolean>(false);
   const [h3KoreanBodyPrompt, setH3KoreanBodyPrompt] = useState<string>('');
   const [h3Resolution, setH3Resolution] = useState<number>(1024);
+  const [h3ModelType, setH3ModelType] = useState<'safetensors' | 'gguf'>('safetensors');
   const [isRenderingStage1, setIsRenderingStage1] = useState<boolean>(false);
   const [stage1Progress, setStage1Progress] = useState<string>('');
   const [stage1ResultSheet, setStage1ResultSheet] = useState<string | null>(null);
@@ -236,6 +237,7 @@ export const Tab2AssetBible: React.FC<Tab2Props> = ({
         wardrobeImagePath: wardrobeUploadedName,
         koreanBodyPrompt: h3KoreanBodyPrompt,
         resolution: h3Resolution,
+        modelType: h3ModelType,
       });
 
       const promptId = await comfyClient.queuePrompt(workflow);
@@ -303,6 +305,7 @@ export const Tab2AssetBible: React.FC<Tab2Props> = ({
         threePanelLayout: stage2ThreePanelLayout,
         koreanPanelPrompt: stage2KoreanPrompt,
         resolution: h3Resolution,
+        modelType: h3ModelType,
       });
 
       const promptId = await comfyClient.queuePrompt(workflow);
@@ -911,16 +914,47 @@ export const Tab2AssetBible: React.FC<Tab2Props> = ({
                       얼굴 1장 + 의상 1장을 융합하여 인물 왜곡 없는 턴어라운드 시트를 원샷 렌더링합니다.
                     </p>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-[11px] font-mono text-slate-400">해상도:</span>
-                    <select
-                      value={h3Resolution}
-                      onChange={(e) => setH3Resolution(Number(e.target.value))}
-                      className="bg-[#090D18] border border-indigo-800 text-indigo-200 text-xs px-2.5 py-1 rounded-lg font-mono"
-                    >
-                      <option value={1024}>1024×1024 (표준 1:1)</option>
-                      <option value={1344}>1344×1344 (초고화질 1:1)</option>
-                    </select>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* H3 엔진 모델 선택 (Safetensors vs GGUF) */}
+                    <div className="flex items-center space-x-1 bg-[#05080E] p-1 rounded-xl border border-indigo-900/60">
+                      <span className="text-[10px] font-mono text-slate-400 px-1.5">엔진:</span>
+                      <button
+                        type="button"
+                        onClick={() => setH3ModelType('safetensors')}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                          h3ModelType === 'safetensors'
+                            ? 'bg-indigo-600 text-white shadow'
+                            : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                        title="minimaxH3INT8INT4_ref2vaINT8Pruned.safetensors (UNETLoader)"
+                      >
+                        ⚡ INT8/INT4 (ST)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setH3ModelType('gguf')}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                          h3ModelType === 'gguf'
+                            ? 'bg-purple-600 text-white shadow'
+                            : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                        title="MiniMax-H3-ref2va-curve-Q5_1.gguf (UnetLoaderGGUF)"
+                      >
+                        💎 Q5_1 (GGUF)
+                      </button>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <span className="text-[11px] font-mono text-slate-400">해상도:</span>
+                      <select
+                        value={h3Resolution}
+                        onChange={(e) => setH3Resolution(Number(e.target.value))}
+                        className="bg-[#090D18] border border-indigo-800 text-indigo-200 text-xs px-2.5 py-1 rounded-lg font-mono"
+                      >
+                        <option value={1024}>1024×1024 (표준 1:1)</option>
+                        <option value={1344}>1344×1344 (초고화질 1:1)</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 

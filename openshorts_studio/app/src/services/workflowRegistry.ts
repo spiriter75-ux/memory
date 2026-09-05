@@ -2333,17 +2333,24 @@ export class WorkflowRegistry {
     koreanBodyPrompt?: string;
     resolution?: number; // 기본 1024 (1:1 Square) 또는 1344
     seed?: number;
+    modelType?: 'safetensors' | 'gguf';
   }): Record<string, unknown> {
     const res = p.resolution || 1024;
     const seed = p.seed ?? Math.floor(Math.random() * 1e9);
     const bodyPrompt = (p.koreanBodyPrompt || '').trim();
+    const isGGUF = p.modelType === 'gguf';
 
     return {
-      // 1. 모델 로드: H3 Ref2VA
-      '10': {
-        class_type: 'UNETLoader',
-        inputs: { unet_name: 'minimaxH3INT8INT4_ref2vaINT8Pruned.safetensors' },
-      },
+      // 1. 모델 로드: H3 Ref2VA (Safetensors vs GGUF 동적 분기)
+      '10': isGGUF
+        ? {
+            class_type: 'UnetLoaderGGUF',
+            inputs: { unet_name: 'MiniMax-H3-ref2va-curve-Q5_1.gguf' },
+          }
+        : {
+            class_type: 'UNETLoader',
+            inputs: { unet_name: 'minimaxH3INT8INT4_ref2vaINT8Pruned.safetensors' },
+          },
       // 2. 4-Step Turbo LoRA
       '17': {
         class_type: 'LoraLoaderModelOnly',
@@ -2486,6 +2493,7 @@ export class WorkflowRegistry {
     koreanPanelPrompt?: string;
     resolution?: number; // 기본 1024 or 1344
     seed?: number;
+    modelType?: 'safetensors' | 'gguf';
   }): Record<string, unknown> {
     const res = p.resolution || 1024;
     const seed = p.seed ?? Math.floor(Math.random() * 1e9);
@@ -2493,13 +2501,19 @@ export class WorkflowRegistry {
     const propMode = p.propMode || 'wield';
     const userPanelText = (p.koreanPanelPrompt || '').trim();
     const poseOverride = (p.poseOverrideText || '').trim();
+    const isGGUF = p.modelType === 'gguf';
 
     const nodes: Record<string, unknown> = {
-      // 1. 모델 로드: H3 Ref2VA
-      '10': {
-        class_type: 'UNETLoader',
-        inputs: { unet_name: 'minimaxH3INT8INT4_ref2vaINT8Pruned.safetensors' },
-      },
+      // 1. 모델 로드: H3 Ref2VA (Safetensors vs GGUF 동적 분기)
+      '10': isGGUF
+        ? {
+            class_type: 'UnetLoaderGGUF',
+            inputs: { unet_name: 'MiniMax-H3-ref2va-curve-Q5_1.gguf' },
+          }
+        : {
+            class_type: 'UNETLoader',
+            inputs: { unet_name: 'minimaxH3INT8INT4_ref2vaINT8Pruned.safetensors' },
+          },
       '17': {
         class_type: 'LoraLoaderModelOnly',
         inputs: {
