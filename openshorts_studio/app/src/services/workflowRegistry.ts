@@ -2342,7 +2342,7 @@ export class WorkflowRegistry {
       // 1. 모델 로드: H3 Ref2VA
       '10': {
         class_type: 'UNETLoader',
-        inputs: { unet_name: 'minimax_h3_ref2va_pruned_int8_convrot.safetensors' },
+        inputs: { unet_name: 'minimaxH3INT8INT4_ref2vaINT8Pruned.safetensors' },
       },
       // 2. 4-Step Turbo LoRA
       '17': {
@@ -2498,7 +2498,7 @@ export class WorkflowRegistry {
       // 1. 모델 로드: H3 Ref2VA
       '10': {
         class_type: 'UNETLoader',
-        inputs: { unet_name: 'minimax_h3_ref2va_pruned_int8_convrot.safetensors' },
+        inputs: { unet_name: 'minimaxH3INT8INT4_ref2vaINT8Pruned.safetensors' },
       },
       '17': {
         class_type: 'LoraLoaderModelOnly',
