@@ -195,9 +195,9 @@ export interface StoryboardCut {
   selectedLoRAName?: string | null;
   selectedLoRAStrength?: number;
   selectedLoRA2Name?: string | null;
-  selectedLoRA2Strength?: number;
-  
-  assembledPrompt: string;
+  assembledPrompt: string; // 2D 정지 이미지 생성용 프롬프트 (Tab 3 전용)
+  videoPrompt?: string | null; // H3 비디오 모션/카메라 영문 시네마틱 프롬프트 (Tab 4 전용)
+  videoKoreanPrompt?: string | null; // 비디오 장면 연출 및 대사 한국어 지문 (Tab 1/Tab 4 연동)
   candidates: ImageCandidate[];
   selectedCandidateIndex: number;
   winnerImagePath: string | null;

@@ -336,6 +336,13 @@ export class AIDirectorService {
       const motion = p.videoPrompt?.motion || 'cinematic subtle action';
       const framing = p.framing || 'Cinematic Medium Shot';
       const assembledPrompt = p.imagePrompt || '';
+      const videoKoreanPrompt = [
+        p.sceneDescription ? `[장면] ${p.sceneDescription}` : '',
+        motion ? `[동작] ${motion}` : '',
+        p.characterState ? `[연기] ${p.characterState}` : '',
+        framing ? `[카메라] ${framing}` : '',
+        dialogueText ? `[대사] "${dialogueText}"` : '',
+      ].filter(Boolean).join(' | ') || originalText;
 
       return {
         id: `cut_${String(idx + 1).padStart(3, '0')}`,
@@ -354,6 +361,8 @@ export class AIDirectorService {
         selectedLoRAName: null,
         selectedLoRAStrength: 0.8,
         assembledPrompt,
+        videoPrompt: null,
+        videoKoreanPrompt,
         candidates: [],
         selectedCandidateIndex: 0,
         winnerImagePath: null,

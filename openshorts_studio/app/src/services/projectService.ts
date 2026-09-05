@@ -319,6 +319,8 @@ export class ProjectService {
         selectedLoRAName: null,
         selectedLoRAStrength: 0.8,
         assembledPrompt: '',
+        videoPrompt: null,
+        videoKoreanPrompt: dialogueText ? `${line} (대사: "${dialogueText}")` : line,
         candidates: [],
         selectedCandidateIndex: 0,
         winnerImagePath: null,

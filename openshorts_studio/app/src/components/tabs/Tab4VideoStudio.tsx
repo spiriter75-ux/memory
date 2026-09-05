@@ -299,9 +299,34 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
     });
   }, []);
 
-  // 컷 선택 또는 모드 전환 시 활성 비디오 플레이어 즉각 동기화
+  // 1단계(대본) 및 컷 연출 정보 기반 비디오 한국어 연출 지문 자동 합성 헬퍼
+  const getSynthesizedKoreanPrompt = (cut: StoryboardCut): string => {
+    if (cut.videoKoreanPrompt && cut.videoKoreanPrompt.trim()) {
+      return cut.videoKoreanPrompt;
+    }
+    const parts: string[] = [];
+    if (cut.actionPose && cut.actionPose.trim() && cut.actionPose !== 'standing naturally, eye-level cinematic shot') {
+      parts.push(`[동작] ${cut.actionPose}`);
+    }
+    if (cut.actingState && cut.actingState.trim() && !cut.actingState.includes('focused expression')) {
+      parts.push(`[연기] ${cut.actingState}`);
+    }
+    if (cut.cameraWeatherMod && cut.cameraWeatherMod.trim() && cut.cameraWeatherMod !== 'cinematic lighting, clear atmosphere') {
+      parts.push(`[카메라] ${cut.cameraWeatherMod}`);
+    }
+    if (cut.dialogueText && cut.dialogueText.trim()) {
+      parts.push(`[대사] "${cut.dialogueText}"`);
+    }
+    if (parts.length > 0) {
+      return parts.join(' | ');
+    }
+    return cut.originalText || '';
+  };
+
+  // 컷 선택 또는 모드 전환 시 활성 비디오 플레이어 및 프롬프트 동기화 (2D 이미지 프롬프트 침범 원천 차단)
   useEffect(() => {
     if (entryMode === 'project' && currentCut) {
+      // 1. 비디오 플레이어 프리뷰 동기화
       if (currentCut.upscaledVideoPath) {
         setActivePreviewVideo(resolveVideoUrl(currentCut.upscaledVideoPath));
         setActiveVideoType('upscale');
@@ -310,6 +335,22 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
         setActiveVideoType('draft');
       } else {
         setActivePreviewVideo(null);
+      }
+
+      // 2. 한국어 연출 지문 (1단계 데이터 기반 자동 연동)
+      setRawKoreanPrompt(getSynthesizedKoreanPrompt(currentCut));
+
+      // 3. 비디오 H3 공식 영문 프롬프트 (2D 이미지 프롬프트인 assembledPrompt는 절대 넣지 않음!)
+      const vPrompt = currentCut.videoPrompt || '';
+      setDirectI2vPrompt(vPrompt);
+      setDirectFl2vPrompt(vPrompt);
+      setDirectRefPrompt(vPrompt);
+      setT2vPrompt(vPrompt);
+      setLongRelayPrompt(vPrompt);
+
+      // 4. 시작 프레임 이미지 동기화
+      if (currentCut.winnerImagePath || currentCut.candidates?.[0]?.imagePath) {
+        setDirectCustomImage(currentCut.winnerImagePath || currentCut.candidates?.[0]?.imagePath || null);
       }
     } else {
       if (directUpscaledVideo) {
@@ -488,16 +529,21 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
         setT2vPrompt(expanded);
       } else if (targetMode === 'i2v') {
         setDirectI2vPrompt(expanded);
-        if (entryMode === 'project') onUpdateCut({ ...currentCut, assembledPrompt: expanded });
       } else if (targetMode === 'fl2v') {
         setDirectFl2vPrompt(expanded);
-        if (entryMode === 'project') onUpdateCut({ ...currentCut, assembledPrompt: expanded });
       } else if (targetMode === 'ref2va') {
         setDirectRefPrompt(expanded);
-        if (entryMode === 'project') onUpdateCut({ ...currentCut, assembledPrompt: expanded });
       } else if (targetMode === 'long_relay') {
         setLongRelayPrompt(expanded);
-        if (entryMode === 'project') onUpdateCut({ ...currentCut, assembledPrompt: expanded });
+      }
+
+      // ★ 3단계 2D 이미지 프롬프트(assembledPrompt)를 절대 덮어쓰지 않고 비디오 전용(videoPrompt)에 영구 저장!
+      if (entryMode === 'project' && project.cuts.length > 0) {
+        onUpdateCut({
+          ...currentCut,
+          videoPrompt: expanded,
+          videoKoreanPrompt: inputText,
+        });
       }
     } catch (err: unknown) {
       alert(`프롬프트 변환 실패: ${err instanceof Error ? err.message : String(err)}`);
@@ -534,7 +580,9 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
       let payload: Record<string, unknown>;
 
       if (videoMode === 't2v') {
-        const textToUse = t2vPrompt.trim() || currentCut.assembledPrompt || currentCut.originalText;
+        const textToUse = (t2vPrompt || (entryMode === 'project' ? currentCut.videoPrompt : '') || '').trim()
+          || currentCut.originalText
+          || 'Cinematic video scene with natural movement and atmospheric lighting';
 
         payload = workflowRegistry.buildH3T2VVideoWorkflow({
           prompt: textToUse,
@@ -554,7 +602,8 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
           comfyClient.uploadImage(lastFrameToUse),
         ]);
 
-        const textToUse = directFl2vPrompt.trim() || currentCut.assembledPrompt || currentCut.originalText;
+        const textToUse = (directFl2vPrompt || (entryMode === 'project' ? currentCut.videoPrompt : '') || '').trim()
+          || `How the reference pictures align with the target video — Picture 1 (from Shot 1) aligns with the 0.00-second mark of the target video; Picture 2 (from Shot 1) aligns with the ${(currentCut.videoDurationSeconds || 5).toFixed(2)}-second mark of the target video.\n\nCinematic smooth interpolation between frames, natural motion.`;
 
         payload = workflowRegistry.buildH3FL2VVideoWorkflow({
           firstFramePath: uploadedFirst,
@@ -586,7 +635,8 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
           activeSlotImages.map((img) => comfyClient.uploadImage(img))
         );
 
-        const textToUse = directRefPrompt.trim() || currentCut.assembledPrompt || currentCut.originalText;
+        const textToUse = (directRefPrompt || (entryMode === 'project' ? currentCut.videoPrompt : '') || '').trim()
+          || `subject_definitions:\n<Picture 1> is the starting frame anchor.\n\nsummary:\nReference-guided cinematic video generation.\n\nretention_analysis:\n<Picture 1>: fully_preserved.\n\ndetailed_description:\n[Shot 1] The scene opens on <Picture 1>. Smooth camera movement and natural character performance.\n\noverall_soundscape:\nAmbient soundscape.\n\nnon_diegetic_music:\nN/A`;
 
         if (uploadedRefs.length === 1) {
           // REF2VA 모드인데 등록된 참조가 1장뿐이면 I2V (단일 이미지 영상화) 모드로 자동 전환하여 에러 방지
@@ -622,7 +672,8 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
 
         setRenderProgress(`릴레이 앵커 프레임 ComfyUI 등록 중...`);
         const uploadedAnchor = await comfyClient.uploadImage(relayAnchorToUse);
-        const textToUse = longRelayPrompt.trim() || currentCut.assembledPrompt || currentCut.originalText;
+        const textToUse = (longRelayPrompt || (entryMode === 'project' ? currentCut.videoPrompt : '') || '').trim()
+          || `For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.\n\nintegrated_multimodal_description: [Shot 1] Seamless continuous shot, camera smoothly tracking forward with natural pacing.\noverall_soundscape: natural room ambience.\nnon_diegetic_music: N/A`;
 
         if (relaySubMode === 'pure_i2v') {
           // [모드 1] 순수 I2V 릴레이 ➔ FL2VA 전용 모델 사용!
@@ -667,7 +718,8 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
         setRenderProgress(`Winner 이미지 ComfyUI 등록 중...`);
         const uploadedFirst = await comfyClient.uploadImage(firstFramePath!);
 
-        const textToUse = directI2vPrompt.trim() || currentCut.assembledPrompt || currentCut.originalText;
+        const textToUse = (directI2vPrompt || (entryMode === 'project' ? currentCut.videoPrompt : '') || '').trim()
+          || `For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.\n\nintegrated_multimodal_description: [Shot 1] Cinematic camera movement with natural character performance and subtle emotional expression.\noverall_soundscape: natural cinematic ambient sound.\nnon_diegetic_music: N/A`;
 
         payload = workflowRegistry.buildH3DraftVideoWorkflow({
           firstFramePath: uploadedFirst,
@@ -830,15 +882,6 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                   type="button"
                   onClick={() => {
                     setSelectedCutId(cut.id);
-                    // Automatically load prompt & image into direct slots for instant workbench freedom
-                    if (cut.winnerImagePath || cut.candidates?.[0]?.imagePath) {
-                      setDirectCustomImage(cut.winnerImagePath || cut.candidates?.[0]?.imagePath || null);
-                    }
-                    if (cut.assembledPrompt || cut.originalText) {
-                      setDirectI2vPrompt(cut.assembledPrompt || cut.originalText);
-                      setDirectFl2vPrompt(cut.assembledPrompt || cut.originalText);
-                      setDirectRefPrompt(cut.assembledPrompt || cut.originalText);
-                    }
                   }}
                   className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition shrink-0 flex items-center space-x-1.5 cursor-pointer ${isSel
                       ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/40 border border-indigo-400'
@@ -1032,7 +1075,13 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                     <textarea
                       rows={2}
                       value={rawKoreanPrompt}
-                      onChange={(e) => setRawKoreanPrompt(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setRawKoreanPrompt(val);
+                        if (entryMode === 'project' && project.cuts.length > 0) {
+                          onUpdateCut({ ...currentCut, videoKoreanPrompt: val });
+                        }
+                      }}
                       placeholder="한국어로 표현하고 싶은 장면을 적으세요 (예: 폭풍우가 몰아치는 거대한 밤바다, 거대한 파도가 솟구치고 번개가 친다)"
                       className="w-full bg-[#090D14] border border-slate-700 text-slate-200 text-xs p-2.5 rounded-xl focus:border-indigo-500 font-sans leading-relaxed placeholder:text-slate-600 shadow-inner"
                     />
@@ -1057,7 +1106,13 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                     <textarea
                       rows={4}
                       value={t2vPrompt}
-                      onChange={(e) => setT2vPrompt(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setT2vPrompt(val);
+                        if (entryMode === 'project' && project.cuts.length > 0) {
+                          onUpdateCut({ ...currentCut, videoPrompt: val });
+                        }
+                      }}
                       placeholder="H3 공식 영문 프롬프트 (위 변환 버튼을 누르거나 직접 영문 입력)"
                       className="w-full min-h-[90px] bg-[#090D14] border border-slate-700 text-slate-200 text-xs p-3 rounded-xl focus:border-indigo-500 font-mono leading-relaxed placeholder:text-slate-600 shadow-inner"
                     />
@@ -1081,42 +1136,44 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                           </span>
                         ) : (
                           <span className="text-[9px] font-mono text-amber-400 bg-amber-950 px-2 py-0.5 rounded border border-amber-800">
-                            이미지 등록 필요
+                            ⚠️ 이미지 등록 필요
                           </span>
                         )}
                       </div>
-                      {firstFramePath && (
-                        <button
-                          type="button"
-                          onClick={handleI2VImageDelete}
-                          className="text-[10px] text-rose-400 hover:text-rose-300 font-bold underline cursor-pointer"
-                        >
-                          × 이미지 제거
-                        </button>
-                      )}
                     </div>
 
+                    {/* 대형 와이드 프리뷰 (이미지 클릭 시 에셋 서랍장 오픈) */}
                     {firstFramePath ? (
-                      <div className="relative w-full h-44 bg-black/60 rounded-lg overflow-hidden border border-indigo-500/80 group shadow-inner flex items-center justify-center">
+                      <div className="relative group rounded-xl overflow-hidden border border-indigo-700/60 shadow-inner bg-[#04060A] flex items-center justify-center min-h-[220px] max-h-[360px]">
                         <img
                           src={firstFramePath}
-                          alt="I2V Start Frame Preview"
-                          className="w-full h-full object-contain"
+                          alt="First Frame"
+                          className="w-full h-full object-contain max-h-[350px] transition-transform duration-300 group-hover:scale-[1.01]"
                         />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-3">
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
                           <button
                             type="button"
                             onClick={() => setAssetDrawerTarget('picture1')}
-                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg cursor-pointer shadow-lg transition"
+                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold shadow-lg transition flex items-center space-x-1 cursor-pointer"
                           >
-                            🔄 다른 사진으로 교체
+                            <span>🗄️ 콘티/바이블에서 변경</span>
                           </button>
+                          <label className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold shadow-lg transition flex items-center space-x-1 cursor-pointer">
+                            <span>📁 PC 사진 업로드</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleI2VImageUpload}
+                            />
+                          </label>
                           <button
                             type="button"
-                            onClick={() => window.open(firstFramePath, '_blank')}
-                            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg border border-slate-700 transition cursor-pointer"
+                            onClick={handleI2VImageDelete}
+                            className="px-2.5 py-1.5 bg-rose-900/80 hover:bg-rose-700 text-rose-200 rounded-lg text-xs font-bold transition cursor-pointer"
+                            title="이미지 제거"
                           >
-                            🔍 원본 크게보기
+                            ✕
                           </button>
                         </div>
                       </div>
@@ -1124,9 +1181,9 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                       <button
                         type="button"
                         onClick={() => setAssetDrawerTarget('picture1')}
-                        className="w-full h-36 border-2 border-dashed border-indigo-800/80 hover:border-indigo-400 bg-[#090D18] hover:bg-indigo-950/40 rounded-xl flex flex-col items-center justify-center cursor-pointer transition p-4 space-y-2 text-center group"
+                        className="w-full py-10 border-2 border-dashed border-indigo-800/80 hover:border-indigo-400 bg-[#090D18] hover:bg-indigo-950/40 rounded-xl flex flex-col items-center justify-center cursor-pointer transition text-center p-4 space-y-2 shadow-inner group"
                       >
-                        <div className="text-3xl text-indigo-400 group-hover:scale-110 transition-transform">📷</div>
+                        <span className="text-3xl group-hover:scale-110 transition-transform">🖼️</span>
                         <div className="text-xs font-bold text-indigo-300">
                           클릭하여 시작 프레임 이미지 등록 (PC / 콘티 / 바이블)
                         </div>
@@ -1147,7 +1204,13 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                     <textarea
                       rows={2}
                       value={rawKoreanPrompt}
-                      onChange={(e) => setRawKoreanPrompt(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setRawKoreanPrompt(val);
+                        if (entryMode === 'project' && project.cuts.length > 0) {
+                          onUpdateCut({ ...currentCut, videoKoreanPrompt: val });
+                        }
+                      }}
                       placeholder="한국어로 적으세요 (예: 주인공이 천천히 고개를 들며 카메라를 응시하고 비장하게 말한다: '끝까지 간다')"
                       className="w-full bg-[#090D14] border border-slate-700 text-slate-200 text-xs p-2.5 rounded-xl focus:border-indigo-500 font-sans leading-relaxed placeholder:text-slate-600 shadow-inner"
                     />
@@ -1173,12 +1236,12 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                     </div>
                     <textarea
                       rows={4}
-                      value={directI2vPrompt || (entryMode === 'project' ? (currentCut.assembledPrompt || currentCut.originalText) : '')}
+                      value={directI2vPrompt}
                       onChange={(e) => {
                         const val = e.target.value;
                         setDirectI2vPrompt(val);
                         if (entryMode === 'project' && project.cuts.length > 0) {
-                          onUpdateCut({ ...currentCut, assembledPrompt: val });
+                          onUpdateCut({ ...currentCut, videoPrompt: val });
                         }
                       }}
                       placeholder="H3 공식 영문 프롬프트가 여기에 생성됩니다 (직접 수정 가능)"
@@ -1277,7 +1340,13 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                     <textarea
                       rows={2}
                       value={rawKoreanPrompt}
-                      onChange={(e) => setRawKoreanPrompt(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setRawKoreanPrompt(val);
+                        if (entryMode === 'project' && project.cuts.length > 0) {
+                          onUpdateCut({ ...currentCut, videoKoreanPrompt: val });
+                        }
+                      }}
                       placeholder="한국어로 적으세요 (예: 인물이 뒤를 돌아보며 걸어가다가 미소를 짓는 모습으로 자연스럽게 전환)"
                       className="w-full bg-[#090D14] border border-slate-700 text-slate-200 text-xs p-2.5 rounded-xl focus:border-indigo-500 font-sans leading-relaxed placeholder:text-slate-600 shadow-inner"
                     />
@@ -1303,12 +1372,12 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                     </div>
                     <textarea
                       rows={4}
-                      value={directFl2vPrompt || (entryMode === 'project' ? (currentCut.assembledPrompt || currentCut.originalText) : '')}
+                      value={directFl2vPrompt}
                       onChange={(e) => {
                         const val = e.target.value;
                         setDirectFl2vPrompt(val);
                         if (entryMode === 'project' && project.cuts.length > 0) {
-                          onUpdateCut({ ...currentCut, assembledPrompt: val });
+                          onUpdateCut({ ...currentCut, videoPrompt: val });
                         }
                       }}
                       placeholder="FL2V 영문 지시문이 생성됩니다"
@@ -1331,7 +1400,13 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                     <textarea
                       rows={2}
                       value={rawKoreanPrompt}
-                      onChange={(e) => setRawKoreanPrompt(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setRawKoreanPrompt(val);
+                        if (entryMode === 'project' && project.cuts.length > 0) {
+                          onUpdateCut({ ...currentCut, videoKoreanPrompt: val });
+                        }
+                      }}
                       placeholder="한국어로 적으세요 (예: <Subject 1> 배경 속에서 <Subject 2> 인물이 앞으로 걸어나오며 손을 뻗는다)"
                       className="w-full bg-[#090D14] border border-slate-700 text-slate-200 text-xs p-2.5 rounded-xl focus:border-indigo-500 font-sans leading-relaxed placeholder:text-slate-600 shadow-inner"
                     />
@@ -1355,12 +1430,12 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                     </div>
                     <textarea
                       rows={4}
-                      value={directRefPrompt || (entryMode === 'project' ? (currentCut.assembledPrompt || currentCut.originalText) : '')}
+                      value={directRefPrompt}
                       onChange={(e) => {
                         const val = e.target.value;
                         setDirectRefPrompt(val);
                         if (entryMode === 'project' && project.cuts.length > 0) {
-                          onUpdateCut({ ...currentCut, assembledPrompt: val });
+                          onUpdateCut({ ...currentCut, videoPrompt: val });
                         }
                       }}
                       placeholder="REF2VA 6단 영문 프롬프트가 생성됩니다"
@@ -1703,7 +1778,13 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                       rows={2}
                       disabled={isRendering}
                       value={rawKoreanPrompt}
-                      onChange={(e) => setRawKoreanPrompt(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setRawKoreanPrompt(val);
+                        if (entryMode === 'project' && project.cuts.length > 0) {
+                          onUpdateCut({ ...currentCut, videoKoreanPrompt: val });
+                        }
+                      }}
                       placeholder="한국어로 적으세요 (예: 인물이 뒤를 돌아보며 서서히 걸어가고 카메라는 부드럽게 팔로우한다)"
                       className="w-full bg-[#090D14] border border-slate-700 text-slate-200 text-xs p-2.5 rounded-xl focus:border-indigo-500 font-sans leading-relaxed placeholder:text-slate-600 shadow-inner"
                     />
@@ -1728,12 +1809,12 @@ export const Tab4VideoStudio: React.FC<Tab4Props> = ({ project, onUpdateCut, onU
                     <textarea
                       rows={4}
                       disabled={isRendering}
-                      value={longRelayPrompt || (entryMode === 'project' ? (currentCut.assembledPrompt || currentCut.originalText) : '')}
+                      value={longRelayPrompt}
                       onChange={(e) => {
                         const val = e.target.value;
                         setLongRelayPrompt(val);
                         if (entryMode === 'project' && project.cuts.length > 0) {
-                          onUpdateCut({ ...currentCut, assembledPrompt: val });
+                          onUpdateCut({ ...currentCut, videoPrompt: val });
                         }
                       }}
                       placeholder="H3 영문 시네마틱 프롬프트가 생성됩니다"
