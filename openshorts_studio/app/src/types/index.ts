@@ -121,6 +121,17 @@ export const INSTALLED_UNET_MODELS: InstalledUnetModel[] = [
 export type TwoDEngineType = 'z-image-turbo' | 'krea-2-turbo' | 'qwen-image-2512';
 export type TwoDMode = 't2i' | 'i2i';
 
+export interface PropItem {
+  id: string;
+  name: string;
+  category: 'weapon' | 'electronics' | 'accessory' | 'vehicle' | 'misc';
+  displayImagePath: string; // 단독 누끼 컷 (제품 전시용)
+  wieldImagePath?: string;   // 인물 파지/착용 컷 (스케일감 레퍼런스)
+  description?: string;
+  tags?: string[];
+  createdAt: string;
+}
+
 export interface CharacterDNA {
   id: string;
   name: string;
@@ -133,6 +144,9 @@ export interface CharacterDNA {
   avoidTraits?: string[];
   refImagePath: string | null;
   turnaroundImagePaths?: string[];
+  turnaroundSheetPath?: string | null; // H3 1단계: 전·측·후 3뷰 턴어라운드 시트
+  masterSheetPath?: string | null;     // H3 2단계: 16:9 마스터 캐릭터 시트
+  stage1FrontCropPath?: string | null; // H3 2단계 기준 정체성 앵커 (정면 자동 크롭본)
   loraName?: string;
   loraStrength?: number;
   lockedPromptBlock: string;
@@ -146,6 +160,7 @@ export interface WardrobePreset {
   shoesProps: string;
   condition?: string;
   refImagePath: string | null;
+  neckCroppedImagePath?: string | null; // H3 의상 오염 방지용 상단 25% 크롭본
 }
 
 export interface LandmarkDNA {
@@ -221,6 +236,7 @@ export interface ProjectMaster {
   characters: CharacterDNA[];
   wardrobes: WardrobePreset[];
   landmarks: LandmarkDNA[];
+  props?: PropItem[];
   defaultUnetModelId: string;
   defaultVideoDuration: number;
   upscaleTargetMP: number;

@@ -39,7 +39,13 @@ export class ProjectService {
         const saved = localStorage.getItem('openshorts_v2_project');
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed && parsed.id) return parsed;
+          if (parsed && parsed.id) {
+            parsed.props = parsed.props || [];
+            parsed.characters = parsed.characters || [];
+            parsed.wardrobes = parsed.wardrobes || [];
+            parsed.landmarks = parsed.landmarks || [];
+            return parsed;
+          }
         }
       }
     } catch (e) {
@@ -219,6 +225,7 @@ export class ProjectService {
       characters: [],
       wardrobes: [],
       landmarks: [],
+      props: [],
       defaultUnetModelId: INSTALLED_UNET_MODELS[0].id,
       defaultVideoDuration: 5,
       upscaleTargetMP: 0.5,
@@ -269,6 +276,10 @@ export class ProjectService {
           if (!parsed || !parsed.id) {
             throw new Error('유효한 OpenShorts 프로젝트 JSON 파일이 아닙니다.');
           }
+          parsed.props = parsed.props || [];
+          parsed.characters = parsed.characters || [];
+          parsed.wardrobes = parsed.wardrobes || [];
+          parsed.landmarks = parsed.landmarks || [];
           resolve(parsed as ProjectMaster);
         } catch (err) {
           reject(err);

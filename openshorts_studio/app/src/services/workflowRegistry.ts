@@ -2322,6 +2322,451 @@ export class WorkflowRegistry {
 
     return nodes;
   }
+
+  /**
+   * 12-A. MiniMax H3 2-Stage 캐릭터 시트 - 1단계 (얼굴 + 의상 기반 무결점 전·측·후 3뷰 턴어라운드)
+   * T=1 정지영상 VAE 결합 원샷 렌더링
+   */
+  buildH3CharacterSheetStage1Workflow(p: {
+    faceImagePath: string;
+    wardrobeImagePath: string;
+    koreanBodyPrompt?: string;
+    resolution?: number; // 기본 1024 (1:1 Square) 또는 1344
+    seed?: number;
+  }): Record<string, unknown> {
+    const res = p.resolution || 1024;
+    const seed = p.seed ?? Math.floor(Math.random() * 1e9);
+    const bodyPrompt = (p.koreanBodyPrompt || '').trim();
+
+    return {
+      // 1. 모델 로드: H3 Ref2VA
+      '10': {
+        class_type: 'UNETLoader',
+        inputs: { unet_name: 'minimax_h3_ref2va_pruned_int8_convrot.safetensors' },
+      },
+      // 2. 4-Step Turbo LoRA
+      '17': {
+        class_type: 'LoraLoaderModelOnly',
+        inputs: {
+          model: ['10', 0],
+          lora_name: 'minimaxh3/minimax_h3_turbo_v4_step600_ema.safetensors',
+          strength_model: 0.75,
+        },
+      },
+      // 3. Kitchen Attention Backend
+      '136': {
+        class_type: 'ModelAttentionBackend',
+        inputs: {
+          backend: 'comfy kitchen attention',
+          model: ['17', 0],
+        },
+      },
+      // 4. CLIP / Text Encoder
+      '11': {
+        class_type: 'CLIPLoader',
+        inputs: {
+          clip_name: 'qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors',
+          type: 'minimax',
+          device: 'default',
+        },
+      },
+      // 5. T=1 Image VAE & Audio VAE
+      '2': {
+        class_type: 'VAELoader',
+        inputs: { vae_name: 'minimax_h3_t1_image_vae_step1597.safetensors' },
+      },
+      '3': {
+        class_type: 'VAELoader',
+        inputs: { vae_name: 'minimax_h3_audio_vae_fp32.safetensors' },
+      },
+      // 6. 이미지 입력: 얼굴(16) + 의상(21, 목 아래 크롭본)
+      '16': {
+        class_type: 'LoadImage',
+        inputs: { image: p.faceImagePath },
+      },
+      '21': {
+        class_type: 'LoadImage',
+        inputs: { image: p.wardrobeImagePath },
+      },
+      // 7. 프롬프트 생성 (H3 표준 턴어라운드 영문 지시문)
+      '24': {
+        class_type: 'PrimitiveStringMultiline',
+        inputs: {
+          value: `subject_definitions:\n<Subject 1> is the adult character depicted in <Picture 1>, wearing the exact costume and clothing items from <Picture 2>.\n<Picture 1> is the identity face reference. Retain facial features, hair color, and likeness.\n<Picture 2> is the wardrobe and costume reference. Transfer the fabric, colors, and cuts precisely onto <Subject 1>.\n\nsummary:\n[reference generation] Create one static high-resolution character turnaround sheet containing exactly three full-body views: front view, side profile view, and rear back view of <Subject 1>.\n\nretention_analysis:\n<Subject 1>: fully_preserved - identity, skin tone, hair, age.\n<Picture 2>: fully_preserved - clothing, garments, shoes.\n\ndetailed_description:\nThe output is a single still image containing a three-view character turnaround sheet on a clean neutral studio background. From left to right: Front view, Side view (90-degree profile), and Back view. Proportions, lighting, and wardrobe are perfectly consistent across all three views.${bodyPrompt ? ` Body features: ${bodyPrompt}.` : ''}\nNo extra people, no motion blur, clean studio lighting, 8k uhd portrait.`,
+        },
+      },
+      // 8. H3 Reference to Video (T=1 Still Image)
+      '13': {
+        class_type: 'MiniMaxH3ReferenceToVideo',
+        inputs: {
+          model: ['136', 0],
+          clip: ['11', 0],
+          vae: ['2', 0],
+          audio_vae: ['3', 0],
+          'ref_images.ref_image_0': ['16', 0],
+          'ref_images.ref_image_1': ['21', 0],
+          prompt: ['24', 0],
+          width: res,
+          height: res,
+          length: 5,
+          ref_image_size: 'max',
+        },
+      },
+      // 9. Latent & Sampler
+      '19': {
+        class_type: 'ToobusyMiniMaxH3ImageLatent',
+        inputs: { width: res, height: res },
+      },
+      '12': {
+        class_type: 'RandomNoise',
+        inputs: { noise_seed: seed, control_after_generate: 'fixed' },
+      },
+      '6': {
+        class_type: 'KSamplerSelect',
+        inputs: { sampler_name: 'er_sde' },
+      },
+      '7': {
+        class_type: 'BasicScheduler',
+        inputs: {
+          model: ['136', 0],
+          scheduler: 'sgm_uniform',
+          steps: 8,
+          denoise: 1.0,
+        },
+      },
+      '9': {
+        class_type: 'BasicGuider',
+        inputs: {
+          model: ['136', 0],
+          conditioning: ['13', 0],
+        },
+      },
+      '8': {
+        class_type: 'SamplerCustomAdvanced',
+        inputs: {
+          noise: ['12', 0],
+          guider: ['9', 0],
+          sampler: ['6', 0],
+          sigmas: ['7', 0],
+          latent_image: ['19', 0],
+        },
+      },
+      // 10. Decode & Save
+      '5': {
+        class_type: 'VAEDecode',
+        inputs: {
+          samples: ['8', 0],
+          vae: ['2', 0],
+        },
+      },
+      '106': {
+        class_type: 'SaveImage',
+        inputs: {
+          images: ['5', 0],
+          filename_prefix: 'charsheet/H3_2STAGE_STAGE1_3VIEW',
+        },
+      },
+    };
+  }
+
+  /**
+   * 12-B. MiniMax H3 2-Stage 캐릭터 시트 - 2단계 (1단계 정면 자동 크롭 + 동적 포즈/소품/배경 16:9 마스터 시트 합성)
+   * 109번 서브그래프 완전 평탄화(Flattened) 무결점 API 직렬화
+   */
+  buildH3CharacterSheetStage2Workflow(p: {
+    stage1SheetPath: string; // 1단계에서 생성된 3뷰 턴어라운드 이미지 경로
+    poseImagePath?: string | null;
+    poseOverrideText?: string;
+    propImagePath?: string | null;
+    propMode?: 'separate' | 'wield'; // 'separate': 단독 누끼 컷, 'wield': 캐릭터가 직접 파지
+    bgImagePath?: string | null;
+    extraPropImagePath?: string | null;
+    panelCount?: number; // 1~4 (기본 3)
+    threePanelLayout?: 'vertical' | 'horizontal'; // 3장일 때: 'vertical' = 좌측1열 세로+우측2칸, 'horizontal' = 상단1행 가로+하단2칸
+    koreanPanelPrompt?: string;
+    resolution?: number; // 기본 1024 or 1344
+    seed?: number;
+  }): Record<string, unknown> {
+    const res = p.resolution || 1024;
+    const seed = p.seed ?? Math.floor(Math.random() * 1e9);
+    const panelCount = p.panelCount || 3;
+    const propMode = p.propMode || 'wield';
+    const userPanelText = (p.koreanPanelPrompt || '').trim();
+    const poseOverride = (p.poseOverrideText || '').trim();
+
+    const nodes: Record<string, unknown> = {
+      // 1. 모델 로드: H3 Ref2VA
+      '10': {
+        class_type: 'UNETLoader',
+        inputs: { unet_name: 'minimax_h3_ref2va_pruned_int8_convrot.safetensors' },
+      },
+      '17': {
+        class_type: 'LoraLoaderModelOnly',
+        inputs: {
+          model: ['10', 0],
+          lora_name: 'minimaxh3/minimax_h3_turbo_v4_step600_ema.safetensors',
+          strength_model: 0.75,
+        },
+      },
+      '136': {
+        class_type: 'ModelAttentionBackend',
+        inputs: {
+          backend: 'comfy kitchen attention',
+          model: ['17', 0],
+        },
+      },
+      '11': {
+        class_type: 'CLIPLoader',
+        inputs: {
+          clip_name: 'qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors',
+          type: 'minimax',
+          device: 'default',
+        },
+      },
+      '2': {
+        class_type: 'VAELoader',
+        inputs: { vae_name: 'minimax_h3_t1_image_vae_step1597.safetensors' },
+      },
+      '3': {
+        class_type: 'VAELoader',
+        inputs: { vae_name: 'minimax_h3_audio_vae_fp32.safetensors' },
+      },
+
+      // 2. 1단계 3뷰 이미지 로드
+      '50': {
+        class_type: 'LoadImage',
+        inputs: { image: p.stage1SheetPath },
+      },
+
+      // 3. 1단계 정면 자동 크롭 (Node 98 연산: width / 3, Node 97: ImageCrop)
+      '98': {
+        class_type: 'MathExpression|pysssss',
+        inputs: { expression: 'a / 3', a: res },
+      },
+      '97': {
+        class_type: 'ImageCrop',
+        inputs: {
+          image: ['50', 0],
+          width: ['98', 0],
+          height: res,
+          x: 0,
+          y: 0,
+        },
+      },
+
+      // 4. 프롬프트 조립
+      '24': {
+        class_type: 'PrimitiveStringMultiline',
+        inputs: {
+          value: `Create one static high-resolution character contact sheet containing exactly ${panelCount} distinct panels showing <Subject 1>.\n<Picture 1> is the frontal reference crop from Stage 1 turnaround. Maintain exact facial identity, hair, and clothing.\n${propMode === 'wield' ? 'PROP USAGE MODE — CHARACTER USES IT: The character actively wields or interacts with the prop/weapon in the action panels.' : 'PROP USAGE MODE — SEPARATE DISPLAY: The prop is presented cleanly as an isolated showcase item in one dedicated panel.'}\n${poseOverride ? `Pose instruction: ${poseOverride}.\n` : ''}${userPanelText ? `User Panel Plan:\n${userPanelText}\n` : ''}Each panel must be sharply defined, perfectly consistent with Picture 1, clean background, 8k resolution.`,
+        },
+      },
+
+      // 5. MiniMax H3 Reference To Video (2단계 서브그래프 내부 노드 99 평탄화)
+      '99': {
+        class_type: 'MiniMaxH3ReferenceToVideo',
+        inputs: {
+          model: ['136', 0],
+          clip: ['11', 0],
+          vae: ['2', 0],
+          audio_vae: ['3', 0],
+          'ref_images.ref_image_0': ['97', 0], // 크롭된 1단계 정면 앵커
+          prompt: ['24', 0],
+          width: res,
+          height: res,
+          length: 5,
+          ref_image_size: 'max',
+        },
+      },
+
+      // 6. 2단계 Latent & Sampler (서브그래프 내부 노드 100, 101, 102, 103, 104 평탄화)
+      '100': {
+        class_type: 'RandomNoise',
+        inputs: { noise_seed: seed, control_after_generate: 'fixed' },
+      },
+      '101': {
+        class_type: 'ToobusyMiniMaxH3ImageLatent',
+        inputs: { width: res, height: res },
+      },
+      '102': {
+        class_type: 'BasicGuider',
+        inputs: {
+          model: ['136', 0],
+          conditioning: ['99', 0],
+        },
+      },
+      '6': {
+        class_type: 'KSamplerSelect',
+        inputs: { sampler_name: 'er_sde' },
+      },
+      '7': {
+        class_type: 'BasicScheduler',
+        inputs: {
+          model: ['136', 0],
+          scheduler: 'sgm_uniform',
+          steps: 8,
+          denoise: 1.0,
+        },
+      },
+      '103': {
+        class_type: 'SamplerCustomAdvanced',
+        inputs: {
+          noise: ['100', 0],
+          guider: ['102', 0],
+          sampler: ['6', 0],
+          sigmas: ['7', 0],
+          latent_image: ['101', 0],
+        },
+      },
+      '104': {
+        class_type: 'VAEDecode',
+        inputs: {
+          samples: ['103', 0],
+          vae: ['2', 0],
+        },
+      },
+
+      // 7. 최종 16:9 합성: 1단계 3뷰(좌측) + 2단계 패널(우측) 가로 병합 (Node 108)
+      '108': {
+        class_type: 'ImageConcanate',
+        inputs: {
+          image1: ['50', 0],
+          image2: ['104', 0],
+          direction: 'right',
+        },
+      },
+
+      // 8. 16:9 캔버스 여백 패딩 (Node 117 연산: height / 16, Node 118: ImagePadForOutpaint)
+      '117': {
+        class_type: 'MathExpression|pysssss',
+        inputs: { expression: 'a / 16', a: res },
+      },
+      '118': {
+        class_type: 'ImagePadForOutpaint',
+        inputs: {
+          image: ['108', 0],
+          top: ['117', 0],
+          bottom: ['117', 0],
+          left: 0,
+          right: 0,
+          feathering: 0,
+        },
+      },
+
+      // 9. 저장 (서브그래프 내부 노드 14)
+      '14': {
+        class_type: 'SaveImage',
+        inputs: {
+          images: ['118', 0],
+          filename_prefix: 'charsheet/H3_2STAGE_FINAL_SHEET',
+        },
+      },
+    };
+
+    // 선택적 슬롯 추가 (포즈, 소품, 배경, 추가 악세서리)
+    let refIdx = 1;
+    if (p.poseImagePath) {
+      nodes['60'] = { class_type: 'LoadImage', inputs: { image: p.poseImagePath } };
+      (nodes['99'] as any).inputs[`ref_images.ref_image_${refIdx}`] = ['60', 0];
+      refIdx++;
+    }
+    if (p.propImagePath) {
+      nodes['61'] = { class_type: 'LoadImage', inputs: { image: p.propImagePath } };
+      (nodes['99'] as any).inputs[`ref_images.ref_image_${refIdx}`] = ['61', 0];
+      refIdx++;
+    }
+    if (p.bgImagePath) {
+      nodes['62'] = { class_type: 'LoadImage', inputs: { image: p.bgImagePath } };
+      (nodes['99'] as any).inputs[`ref_images.ref_image_${refIdx}`] = ['62', 0];
+      refIdx++;
+    }
+    if (p.extraPropImagePath && refIdx <= 4) {
+      nodes['63'] = { class_type: 'LoadImage', inputs: { image: p.extraPropImagePath } };
+      (nodes['99'] as any).inputs[`ref_images.ref_image_${refIdx}`] = ['63', 0];
+      refIdx++;
+    }
+
+    return nodes;
+  }
+
+  /**
+   * 12-C. 2D 에셋 즉석 쾌속 생성기 (Text-to-Asset: 의상 플랫레이, 무기 누끼, 클린 플레이트 배경)
+   * 3초 고속 생성 (Z-Image / Krea2 / Qwen 경량)
+   */
+  buildQuickAssetGeneratorWorkflow(p: {
+    prompt: string;
+    assetType: 'wardrobe' | 'prop' | 'location';
+    seed?: number;
+    width?: number;
+    height?: number;
+  }): Record<string, unknown> {
+    const seed = p.seed ?? Math.floor(Math.random() * 1e9);
+    const w = p.width || (p.assetType === 'location' ? 1344 : 1024);
+    const h = p.height || (p.assetType === 'location' ? 768 : 1024);
+
+    let specializedPrompt = p.prompt.trim();
+    if (p.assetType === 'wardrobe') {
+      specializedPrompt = `flatlay product photography of ${p.prompt}, centered on solid white background, clothing neatly laid out, no mannequin, no human, sharp fabric texture, studio rim lighting, 8k uhd`;
+    } else if (p.assetType === 'prop') {
+      specializedPrompt = `isolated commercial product shot of ${p.prompt}, centered, pure white studio background, high-end craftsmanship, pristine reflections, sharp focus, 8k uhd, no person`;
+    } else if (p.assetType === 'location') {
+      specializedPrompt = `cinematic empty film set of ${p.prompt}, wide angle, clean plate, zero people, atmospheric architectural lighting, rich surface textures, photorealistic 8k`;
+    }
+
+    return {
+      '1': {
+        class_type: 'CheckpointLoaderSimple',
+        inputs: { ckpt_name: 'Qwen-Rapid-AIO-NSFW-v23.safetensors' },
+      },
+      '2': {
+        class_type: 'CLIPTextEncode',
+        inputs: {
+          text: specializedPrompt,
+          clip: ['1', 1],
+        },
+      },
+      '3': {
+        class_type: 'CLIPTextEncode',
+        inputs: {
+          text: 'blurry, low quality, human, person, mannequin, messy, distorted, text, watermark',
+          clip: ['1', 1],
+        },
+      },
+      '4': {
+        class_type: 'EmptyLatentImage',
+        inputs: { width: w, height: h, batch_size: 1 },
+      },
+      '5': {
+        class_type: 'KSampler',
+        inputs: {
+          seed,
+          steps: 8,
+          cfg: 3.5,
+          sampler_name: 'euler',
+          scheduler: 'simple',
+          denoise: 1.0,
+          model: ['1', 0],
+          positive: ['2', 0],
+          negative: ['3', 0],
+          latent_image: ['4', 0],
+        },
+      },
+      '6': {
+        class_type: 'VAEDecode',
+        inputs: {
+          samples: ['5', 0],
+          vae: ['1', 2],
+        },
+      },
+      '7': {
+        class_type: 'SaveImage',
+        inputs: {
+          filename_prefix: `openshorts_v2/assets/${p.assetType}`,
+          images: ['6', 0],
+        },
+      },
+    };
+  }
 }
 
 export const workflowRegistry = new WorkflowRegistry();

@@ -8,7 +8,7 @@ import { Tab4VideoStudio } from './components/tabs/Tab4VideoStudio';
 import { Tab5MasteringStudio } from './components/tabs/Tab5MasteringStudio';
 import { ProjectManagerModal } from './components/ProjectManagerModal';
 import { projectService } from './services/projectService';
-import { ProjectMaster, StoryboardCut, CharacterDNA, WardrobePreset, LandmarkDNA } from './types';
+import { ProjectMaster, StoryboardCut, CharacterDNA, WardrobePreset, LandmarkDNA, PropItem } from './types';
 
 export const App: React.FC = () => {
   const [project, setProject] = useState<ProjectMaster>(projectService.getCurrentProject());
@@ -147,9 +147,17 @@ export const App: React.FC = () => {
   const handleUpdateBible = (
     characters: CharacterDNA[],
     wardrobes: WardrobePreset[],
-    landmarks: LandmarkDNA[]
+    landmarks: LandmarkDNA[],
+    props?: PropItem[]
   ) => {
-    const updated = { ...project, characters, wardrobes, landmarks, updatedAt: new Date().toISOString() };
+    const updated = {
+      ...project,
+      characters,
+      wardrobes,
+      landmarks,
+      props: props || project.props || [],
+      updatedAt: new Date().toISOString(),
+    };
     projectService.setProject(updated);
     setProject(updated);
   };
